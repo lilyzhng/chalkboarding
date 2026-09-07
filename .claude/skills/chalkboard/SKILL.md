@@ -71,7 +71,11 @@ Start from `assets/template.html` (a complete working skeleton) and read
 `references/design-system.md` for the visual language: exact colors, board
 construction, the chalky font, and the hand-drawn discontinuity system.
 For animation recipes (chips, progress fills, playheads, SVG curve draw-on,
-pixel grids), read `references/animation-patterns.md`.
+pixel grids), read `references/animation-patterns.md`. Before building,
+skim `references/worked-examples.md` and open the example figure closest to
+what you're making — it records regeneration prompts, mocks, and the
+implementation tricks (bitmap tracing, declarative `data-t` beats,
+hand-drawn SVG pictograms) that the finished files don't explain.
 
 The non-negotiables that make the style read as "chalkboard" — all already
 wired in the template:

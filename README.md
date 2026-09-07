@@ -30,6 +30,8 @@ Workflow it enforces:
 - `.claude/skills/chalkboard/references/design-system.md` — exact visual language
 - `.claude/skills/chalkboard/references/animation-patterns.md` — animation recipes
 - `.claude/skills/chalkboard/assets/template.html` — working skeleton
+- `.claude/skills/chalkboard/references/worked-examples.md` — how to regenerate
+  the example figures: prompt → ASCII mock → implementation notes
 - `.claude/skills/chalkboard/assets/*.ttf` — chalk fonts
 
 ## Examples

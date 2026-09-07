@@ -32,6 +32,8 @@ Workflow it enforces:
 - `.claude/skills/chalkboard/assets/template.html` — working skeleton
 - `.claude/skills/chalkboard/references/worked-examples.md` — how to regenerate
   the example figures: prompt → ASCII mock → implementation notes
+- `.claude/skills/chalkboard/scripts/trace_bitmap.py` — trace any image into a
+  pixel-grid bitmap (the "trace, don't freehand" step)
 - `.claude/skills/chalkboard/assets/*.ttf` — chalk fonts
 
 ## Examples

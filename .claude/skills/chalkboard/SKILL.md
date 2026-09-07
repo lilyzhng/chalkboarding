@@ -19,6 +19,14 @@ status line tells the viewer where they are, and an eraser button replays the
 whole thing. The output embeds cleanly in a webpage via iframe and prints as a
 static final frame for papers.
 
+The whole workflow is one idea applied repeatedly: **divide and conquer**.
+Never ask yourself to conceive and render in the same step — split every hard
+visual goal into a structure step and a manifestation step. The ASCII mock
+separates *what the figure says* from *how it looks*; tracing separates *the
+shape* from *the drawing of it*; `paint(t)` separates *the story's beats*
+from *the rendering of any moment*. Whenever part of a figure feels too hard
+to produce directly, don't push harder — find the split.
+
 Two phases, in order. Do not skip phase 1 for anything non-trivial — layout
 mistakes are 10x cheaper to fix in ASCII than in styled HTML.
 
@@ -112,6 +120,30 @@ wired in the template:
 5. **Embedding contract**: `background: transparent` on body, `html{zoom:0.8}`,
    and the `postHeight()` snippet that posts `{chalkHeight, chalkSrc}` to the
    parent — this is how host pages size the iframe. Keep it verbatim.
+
+### Complex imagery: trace, don't freehand
+
+You (a coding model) have weak spatial intuition: freehanding a recognizable
+kangaroo or an opera house from imagined coordinates produces mush. Don't
+try. Split drawing into **trace** (get the shape from a reference) and
+**render** (fill it in chalk):
+
+- If you're unsure what the concept even looks like, first find one or two
+  reference images (web search) and study them — that's how the diffusion
+  analogy figure locked in "left: paint pixel by pixel, right: denoise all
+  at once" before any drawing happened.
+- For pixel-grid subjects, trace a real image instead of inventing cells:
+  `python3 scripts/trace_bitmap.py <image> --size 32` converts any PNG (an
+  emoji from the Twemoji repo, a logo, a silhouette) into the `X`/`.` bitmap
+  array the pixel-grid recipe consumes. The kangaroo was traced from the
+  Twemoji kangaroo's alpha channel this way.
+- For SVG pictograms, same principle at lower fidelity: describe the pose in
+  a handful of landmark points taken from a reference (head circle, spine
+  line, limb angles), then connect them with round-capped strokes — trace
+  the skeleton, not the outline.
+
+Freehand is fine only for things with trivial geometry: stick figures,
+arrows, boxes, simple charts.
 
 Name the file `<topic>_chalk.html` (append `-v2`, `-v3` when iterating so old
 versions stay comparable).

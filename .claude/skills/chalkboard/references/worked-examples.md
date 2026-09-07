@@ -43,11 +43,26 @@ Beats: t=0 both start · t≈3.2 right converges + done badge + hook question
        t=7.0 left finally finishes · t=7.3 freeze
 ```
 
+**How it was actually made (the process is the lesson):**
+
+1. The author already knew the composition: left = painting sequentially,
+   right = denoising. That target was fixed before any code.
+2. The model was first sent to find reference images explaining diffusion,
+   so it understood the concept and the speed contrast it had to dramatize —
+   concept before pixels.
+3. First drawing attempts **freehanded** the kangaroo (and a Sydney Opera
+   House) from imagined coordinates — they came out badly; coding models
+   have poor spatial sense. The fix: find a kangaroo image online and
+   **trace** it. Everything became easy after that.
+
+Divide and conquer, twice over: concept → composition → shape → fill. Use
+`scripts/trace_bitmap.py` to automate the trace step.
+
 **Implementation notes:**
 
 - The image is a **hard-coded 32-row bitmap** of `'X'`/`'.'` strings (`ROO`
-  array) — traced from the Twemoji kangaroo's alpha channel. For a new
-  subject, trace any small emoji/icon at 32×32 the same way. Grids stay
+  array) — traced from the Twemoji kangaroo's alpha channel
+  (`trace_bitmap.py <emoji.png> --size 32` reproduces this). Grids stay
   ≤32×32; this is a chalk sketch, not a framebuffer.
 - Each canvas is a CSS grid of `<i>` cells built once up front.
 - Serial panel: `filled = floor(t/T_P * N)` index cutoff; the current cell

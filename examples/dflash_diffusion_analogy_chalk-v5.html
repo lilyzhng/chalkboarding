@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paint sequentially vs denoise in parallel: the diffusion analogy</title>
+<style>@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}</style>
+<style>
+:root{
+  --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
+  --_ink: var(--ink, #2A2A26);
+  --chalk:#F5F4EF;
+  --chalk-dim:rgba(245,244,239,.55);
+  --board:#12291d;
+  --frame:#7A5230;
+}
+*{box-sizing:border-box}
+html{zoom:0.8}
+body{
+  margin:0;padding:0 0 4px;background:transparent;
+  font-family:var(--_serif);
+}
+.wrap{max-width:940px;margin:0 auto}
+.board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
+.slate{
+  position:relative;font-family:'PencilPete',cursive;
+  border-radius:10px;padding:30px 34px 26px;color:var(--chalk);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 15%, rgba(255,255,255,0.03), transparent 60%),
+    var(--board);
+}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){
+  .cols{grid-template-columns:1fr}
+  .slate{padding-bottom:76px}
+}
+.lane{
+  border:1.5px dashed rgba(245,244,239,.45);border-radius:12px;
+  padding:16px 18px;display:flex;flex-direction:column;align-items:center;
+}
+.lane.p1{transform:rotate(-0.3deg)}
+.lane.p2{transform:rotate(0.25deg)}
+.lanehead{display:flex;align-items:baseline;gap:9px;margin-bottom:6px;flex-wrap:wrap;justify-content:center}
+.lanename{
+  color:var(--chalk);font-size:1.3rem;font-weight:700;letter-spacing:.08em;
+}
+.lanesub{color:var(--chalk-dim);font-size:1.05rem}
+.donebadge{
+  color:var(--chalk);font-size:1rem;
+  border:1.5px solid currentColor;border-radius:50px;
+  padding:1px 10px;opacity:0;transition:opacity .3s;white-space:nowrap;
+}
+.lane.p1 .donebadge{transform:rotate(1.2deg)}
+.lane.p2 .donebadge{transform:rotate(-1.4deg)}
+.pix{
+  display:grid;grid-template-columns:repeat(32,1fr);gap:1.5px;
+  width:min(288px,100%);margin:14px auto 6px;
+}
+.pix i{aspect-ratio:1;border-radius:1.5px;background:rgba(245,244,239,.06)}
+.question{
+  text-align:center;font-size:1.45rem;color:var(--chalk);margin-top:18px;
+  opacity:0;transition:opacity .6s;transform:rotate(-0.4deg);
+}
+.question .u{border-bottom:2px dashed rgba(245,244,239,.6);padding-bottom:2px}
+.venuenote{text-align:center;font-size:1rem;color:var(--chalk-dim);margin-top:10px}
+.status{font-size:1.05rem;color:var(--chalk-dim);margin-top:auto;padding-top:8px;min-height:26px;text-align:center}
+.replay{
+  position:absolute;bottom:18px;right:28px;z-index:2;
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;padding:0;
+}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{
+  width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);
+}
+.replay:hover .eraser{filter:brightness(1.08)}
+.replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+  .lane{transform:none!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="slip1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+<div class="wrap">
+  <div class="board"><div class="slate">
+    <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
+    <div class="cols">
+
+      <div class="lane p1">
+        <div class="lanehead">
+          <span class="lanename">Paint sequentially</span>
+          <span class="lanesub">pixel by pixel</span>
+          <span class="donebadge" id="done1">still painting&#8230;</span>
+        </div>
+        <div class="pix" id="grid1"></div>
+        <div class="status" id="status1"></div>
+      </div>
+
+      <div class="lane p2">
+        <div class="lanehead">
+          <span class="lanename">Denoise in parallel</span>
+          <span class="lanesub">diffusion</span>
+          <span class="donebadge" id="done2">all pixels at once</span>
+        </div>
+        <div class="pix" id="grid2"></div>
+        <div class="status" id="status2"></div>
+      </div>
+
+    </div>
+    <div class="venuenote">a diffusion canvas for a Sydney local &middot; see you at NeurIPS 2026</div>
+    <div class="question" id="question">What about <span class="u">drafting tokens</span> in parallel?</div>
+  </div></div>
+</div>
+
+<script>
+(function(){
+  // Kangaroo silhouette traced from the Twemoji kangaroo (alpha channel, 32x32)
+  var ROO = [
+    ".....X..XX......................",
+    "....XX..XX......................",
+    "....XX.XXX......................",
+    ".....XXXX.......................",
+    ".....XXXX.......................",
+    "....XXXXXX......................",
+    "...XXXXXXX......................",
+    "..XXXXXXXXX.....................",
+    ".XXXXXXXXXX.....................",
+    "XXXXXXXXXXX.....................",
+    ".XXXXXXXXXX.....................",
+    "......XXXXX.....................",
+    ".....XXXXXXX....................",
+    ".....XXXXXXXXX..................",
+    ".....XXXXXXXXXXX................",
+    ".....XXXXXXXXXXXX...............",
+    ".....XXXXXXXXXXXXX..............",
+    ".....XXXXXXXXXXXXXX.............",
+    ".....XXXXXXXXXXXXXXX............",
+    "....XXXXXXXXXXXXXXXX............",
+    "....X.XXXXXXXXXXXXXXX...........",
+    "....X..XXXXXXXXXXXXXX...........",
+    "........XXXXXXXXXXXXXX..........",
+    "........XXXXXXXXXXXXXX..........",
+    "..........XXXXXXXXXXXX..........",
+    "............XXXXXXXXXXX.........",
+    "............XXXX.XXXXXX.........",
+    "............XXXX..XXXXXX......XX",
+    ".............XXX...XXXXXX...XXX.",
+    ".............XXX....XXXXXXXXXXX.",
+    ".............XXX.....XXXXXXXXX..",
+    "........XXXXXXXX.......XXXXX...."
+  ];
+  var W = 32;
+  var N = ROO.length * W;
+  var T_D = 3.2;          // parallel denoise completes
+  var T_P = 7.0;          // serial painting completes
+  var END = T_P + 0.3;
+
+  function target(i){
+    var r = Math.floor(i / W), c = i % W;
+    return ROO[r].charAt(c) === 'X';
+  }
+  // fixed per-cell chalk texture so the final image looks hand-filled
+  var tex = [];
+  for (var i = 0; i < N; i++) tex.push(0.72 + ((i * 37 + 11) % 23) / 100);
+
+  function buildGrid(el){
+    var cells = [];
+    for (var i = 0; i < N; i++){
+      var d = document.createElement('i');
+      el.appendChild(d); cells.push(d);
+    }
+    return cells;
+  }
+  var cells1 = buildGrid(document.getElementById('grid1'));
+  var cells2 = buildGrid(document.getElementById('grid2'));
+
+  // per-cell timing offsets for the organic parallel converge
+  var delay2 = [];
+  for (var j = 0; j < N; j++) delay2.push(Math.random() * 0.55);
+
+  var done1 = document.getElementById('done1'),
+      done2 = document.getElementById('done2');
+  var status1 = document.getElementById('status1'),
+      status2 = document.getElementById('status2');
+  var question = document.getElementById('question');
+
+  function finalCell(el, i){
+    el.style.background = target(i)
+      ? 'rgba(245,244,239,' + tex[i].toFixed(2) + ')'
+      : 'rgba(245,244,239,.05)';
+    el.style.boxShadow = 'none';
+  }
+  function noiseCell(el, scale){
+    el.style.background = 'rgba(245,244,239,' + (Math.random() * (scale || 0.3)).toFixed(2) + ')';
+    el.style.boxShadow = 'none';
+  }
+
+  function paint(t){
+    // ---- lane 1: serial raster fill ----
+    var filled = Math.min(N, Math.floor((t / T_P) * N));
+    for (var i = 0; i < N; i++){
+      if (i < filled){ finalCell(cells1[i], i); }
+      else if (Math.random() < 0.10){ noiseCell(cells1[i]); }
+    }
+    if (filled < N && filled > 0){
+      cells1[filled].style.boxShadow = '0 0 0 1.5px rgba(245,244,239,.85)';
+    }
+    if (t >= T_P){
+      done1.style.opacity = '0';
+      status1.textContent = 'done at last \u00b7 32\u00d732 grid';
+    } else {
+      done1.style.opacity = t >= T_D ? '1' : '0';
+      status1.textContent = 'cell ' + Math.min(N, filled + 1) + ' of ' + N + '\u2026';
+    }
+
+    // ---- lane 2: parallel denoise ----
+    for (var k = 0; k < N; k++){
+      var p = Math.max(0, Math.min(1, (t - delay2[k]) / (T_D - delay2[k])));
+      p = p * p * (3 - 2 * p); // smoothstep
+      if (p >= 1){ finalCell(cells2[k], k); continue; }
+      var a;
+      if (target(k)){ a = tex[k] * p + Math.random() * 0.35 * (1 - p); }
+      else          { a = 0.05 * p + Math.random() * 0.24 * (1 - p); }
+      cells2[k].style.background = 'rgba(245,244,239,' + a.toFixed(2) + ')';
+      cells2[k].style.boxShadow = 'none';
+    }
+    var dDone = t >= T_D;
+    done2.style.opacity = dDone ? '1' : '0';
+    status2.textContent = dDone
+      ? 'noise to image in ' + T_D.toFixed(1) + 's'
+      : 'pure noise, denoising every pixel at once\u2026';
+
+    // the hook appears once the parallel canvas is done
+    question.style.opacity = dDone ? '1' : '0';
+  }
+
+  var replay = document.getElementById('replay');
+  var t0 = performance.now(), raf = null;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function tick(){
+    var t = (performance.now() - t0) / 1000;
+    if (t >= END){ paint(END); raf = null; return; }
+    paint(t);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function play(){
+    if (raf) cancelAnimationFrame(raf);
+    if (reduced){ paint(END); return; }
+    t0 = performance.now();
+    paint(0);
+    raf = requestAnimationFrame(tick);
+  }
+
+  replay.addEventListener('click', play);
+  play();
+
+  window.addEventListener('beforeprint', function(){
+    try { if (typeof raf !== 'undefined' && raf) cancelAnimationFrame(raf); } catch(e){}
+    try { paint(1e9); } catch(e){}
+  });
+  function postHeight(){
+    parent.postMessage({
+      chalkHeight: Math.ceil(document.body.getBoundingClientRect().height),
+      chalkSrc: location.pathname.split('/').pop()
+    }, '*');
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(postHeight);
+  setTimeout(postHeight, 1500);
+})();
+</script>
+<script>
+(function(){
+  // hand-drawn slips: long strokes are harder to draw straight, so the longer
+  // the element, the more likely (and eventually certain) a waver somewhere.
+  var els = document.querySelectorAll('.slate span, .slate button, .slate td, .slate th, .slate .tlabel, .slate .tline, .slate .panettl, .slate .outerttl, .slate .note, .slate .pic, .slate .share, .slate .name, .slate .verdict, .slate .setup, .slate .given, .slate .bar, .slate .seg, .slate .card, .slate .pill, .slate .pane, .slate .panel, .slate .trow, .slate .outer, .slate .chunk, .slate .status, .slate .lanesub, .slate .question, .slate .venuenote');
+  var slips = ['url(#slip1)', 'url(#slip2)', 'url(#slip3)'];
+  els.forEach(function(el, i){
+    var w = el.offsetWidth || 0;
+    var r = ((i * 61 + 17) % 100) / 100;
+    var pClean = w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0;
+    if (r < pClean) return;
+    el.style.filter = slips[i % 3];
+  });
+})();
+</script>
+</body>
+</html>

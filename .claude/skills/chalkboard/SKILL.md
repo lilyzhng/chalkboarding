@@ -1,0 +1,118 @@
+---
+name: chalkboard
+description: >
+  Create animated chalkboard-style HTML figures — a green slate in a wooden frame,
+  hand-drawn chalk lettering, wobbly strokes, and elements that animate onto the
+  board like a lecture unfolding. Use this skill whenever the user asks for a
+  "chalkboard figure", "chalk figure", "blackboard diagram", a figure for a paper,
+  blog, talk, or teaching material in the chalkboard style, or wants to convert a
+  sketch/mock/idea into one. Also use it when iterating on any existing *_chalk.html
+  figure. The workflow starts with a cheap ASCII mock for layout sign-off, then
+  converts it into the chalkboard design system.
+---
+
+# Chalkboard figures
+
+Build a self-contained HTML file that looks like a hand-drawn chalkboard and
+animates like a lecture: elements appear in a narrative order, a playhead or
+status line tells the viewer where they are, and an eraser button replays the
+whole thing. The output embeds cleanly in a webpage via iframe and prints as a
+static final frame for papers.
+
+Two phases, in order. Do not skip phase 1 for anything non-trivial — layout
+mistakes are 10x cheaper to fix in ASCII than in styled HTML.
+
+## Phase 1 — ASCII mock
+
+Turn the idea into an ASCII wireframe in the conversation, at roughly the real
+aspect ratio (figures are ~940px wide). Show:
+
+- every panel/lane/box with its border and label
+- placeholder text where real labels go
+- the replay button position (bottom-right)
+- an **animation beat table** under the mock: what appears at which second
+
+Example mock:
+
+```
++--------------------------------------------------------------+
+| time ->  |0s----1s----2s----3s----4s----5s---...---10s|      |
+| +----------------------------------------------------------+ |
+| : VANILLA DECODING                          (done · 10.0s) : |
+| : [Happiness][can][be][found]...   <- one chip per second  : |
+| : ============------------------   <- chalk progress fill  : |
+| :  target pass 4 of 10...          <- status line          : |
+| +----------------------------------------------------------+ |
+| +----------------------------------------------------------+ |
+| : SPECULATIVE DECODING                    (done · 3.3s ✓)  : |
+| : ([..5 chips..]) ([..5 chips..])  <- chunks per round     : |
+| +----------------------------------------------------------+ |
+|                                              [eraser/replay] |
++--------------------------------------------------------------+
+
+Beats: t=0 start · t=1.65 chunk 1 · t=3.3 chunk 2 + done badge
+       t=10 vanilla done · t=11.5 freeze (loop end)
+```
+
+Conventions: `:` dashed lane borders, `[x]` chips, `(...)` grouped chunks,
+`=` filled / `-` unfilled progress. Annotate anything that moves with `<-`.
+
+Iterate here until the user approves the layout and the story beats. The mock
+is the contract: the number of panels, the reading order, and the beat table
+carry over 1:1 into phase 2.
+
+While mocking, push for **one idea per figure**. A chalkboard reads like a
+teacher's board, not a dashboard — if the mock needs more than ~2 lanes or
+~3 beats-per-lane to make its point, suggest splitting into two figures.
+
+## Phase 2 — convert to chalkboard HTML
+
+Start from `assets/template.html` (a complete working skeleton) and read
+`references/design-system.md` for the visual language: exact colors, board
+construction, the chalky font, and the hand-drawn discontinuity system.
+For animation recipes (chips, progress fills, playheads, SVG curve draw-on,
+pixel grids), read `references/animation-patterns.md`.
+
+The non-negotiables that make the style read as "chalkboard" — all already
+wired in the template:
+
+1. **Board**: wooden frame `#7A5230` wrapping a deep-green slate `#12291d`
+   with faint radial "chalk dust" lighting. Chalk ink is `#F5F4EF`,
+   secondary ink `rgba(245,244,239,.55)`.
+2. **Chalky font**: `PencilPete.ttf` for everything on the slate, loaded via
+   `@font-face` with a relative `url("PencilPete.ttf")` — copy the font from
+   this skill's `assets/` (or reuse one already in the project) so it sits
+   next to the output HTML.
+3. **Discontinuity (hand-drawn feel)**: three SVG turbulence filters
+   (`#slip1..3`) plus the standard end-of-body script that applies them
+   probabilistically — the longer an element, the more likely it wavers,
+   exactly like real handwriting. Add every new visual class to that
+   script's selector list. Complement with small alternating rotations
+   (±0.25°–1.4°) and irregular border-radii like `10px 8px 11px 7px`.
+4. **Animation model**: one idempotent `paint(t)` function, beat times as
+   named constants at the top of the script, a single rAF loop, and the
+   eraser replay button. Never accumulate state per frame — `paint(t)` must
+   render any `t` from scratch so replay, reduced-motion (jump to final
+   frame), and `beforeprint` (paint final frame) all fall out for free.
+5. **Embedding contract**: `background: transparent` on body, `html{zoom:0.8}`,
+   and the `postHeight()` snippet that posts `{chalkHeight, chalkSrc}` to the
+   parent — this is how host pages size the iframe. Keep it verbatim.
+
+Name the file `<topic>_chalk.html` (append `-v2`, `-v3` when iterating so old
+versions stay comparable).
+
+## Phase 3 — QA before delivering
+
+Screenshot the figure with Playwright (Chromium is preinstalled) at t=0, one
+mid-animation beat, and after the loop ends, and actually look at the images:
+
+- nothing overflows the slate; chips wrap instead of clipping
+- the final frame is self-sufficient — a reader who only ever sees the frozen
+  frame (print, reduced motion) still gets the full message, including
+  every label and the "done" state
+- text contrast: primary chalk on board, secondary at .55 alpha, nothing dimmer
+- the chalky waver is visible on long strokes but labels stay legible
+- replay actually resets everything (click it in the Playwright session)
+
+A quick screenshot harness is described at the end of
+`references/animation-patterns.md`.

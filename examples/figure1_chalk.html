@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speculative decoding timeline</title>
+<style>@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}</style>
+<style>
+:root{
+  /* falls back gracefully when standalone; inherits your site's tokens when embedded */
+  --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
+  --_ink: var(--ink, #2A2A26);
+  --chalk:#F5F4EF;
+  --chalk-dim:rgba(245,244,239,.55);
+  --board:#12291d;
+  --frame:#7A5230;
+}
+*{box-sizing:border-box}
+html{zoom:0.8}
+body{
+  margin:0;padding:0 0 4px;background:transparent;
+  font-family:var(--_serif);
+}
+.wrap{max-width:940px;margin:0 auto}
+h2{
+  font-family:var(--_serif);
+  font-size:1.55rem;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  color:var(--_ink);
+  margin:3.25rem 0 1rem;
+}
+.board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
+.replay{
+  position:absolute;bottom:18px;right:28px;z-index:2;
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;padding:0;
+}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{
+  width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);
+}
+.replay:hover .eraser{filter:brightness(1.08)}
+.slate{
+  position:relative;
+  font-family:'PencilPete',cursive;
+  border-radius:10px;padding:30px 34px 52px;color:var(--chalk);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 15%, rgba(255,255,255,0.03), transparent 60%),
+    var(--board);
+}
+.axis{
+  display:flex;align-items:flex-end;gap:14px;margin:2px 2px 20px;
+}
+.axislbl{
+  font-size:1.2rem;color:var(--chalk-dim);white-space:nowrap;padding-bottom:6px;
+}
+.axistrack{
+  position:relative;flex:1;height:34px;
+  border-bottom:2px dotted rgba(245,244,239,.3);
+}
+.axistick{
+  position:absolute;bottom:0;height:7px;border-left:1.5px solid rgba(245,244,239,.4);
+}
+.axisnum{
+  position:absolute;top:0;transform:translateX(-50%);
+  font-size:1.15rem;color:var(--chalk-dim);
+}
+.playhead{
+  position:absolute;top:0;bottom:-4px;width:0;
+  border-left:2px solid rgba(245,244,239,.7);
+}
+.lane{
+  border:1.5px dashed rgba(245,244,239,.45);border-radius:12px;
+  padding:16px 18px;margin-bottom:18px;
+}
+.lane:last-child{margin-bottom:0}
+.lane.v{transform:rotate(-0.3deg)}
+.lane.s{transform:rotate(0.25deg)}
+.lanehead{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.lanename{
+  font-weight:700;
+}
+.lanename{color:var(--chalk);font-size:1.5rem;letter-spacing:.18em}
+.donebadge{
+  border:1.5px solid currentColor;border-radius:50px;
+  padding:2px 11px;opacity:0;transition:opacity .3s;
+}
+.donebadge{color:var(--chalk);font-size:1.15rem;margin-left:auto}
+.lane.v .donebadge{transform:rotate(1.2deg)}
+.lane.s .donebadge{transform:rotate(-1.4deg)}
+.clock{
+  margin-left:auto;font-size:1.25rem;color:var(--chalk-dim);
+  font-variant-numeric:tabular-nums;
+}
+.chips{display:flex;gap:8px;flex-wrap:wrap;min-height:42px}
+.chip{
+  border:1.7px solid rgba(245,244,239,.75);
+  border-radius:10px 8px 11px 7px;
+  padding:5px 14px;font-size:1.35rem;font-weight:700;
+  color:var(--chalk);
+  background:rgba(245,244,239,.05);
+  opacity:0;transition:opacity .3s;
+}
+.chip:nth-child(odd){transform:rotate(-1.1deg)}
+.chip:nth-child(even){transform:rotate(0.9deg)}
+.chip.show{opacity:1}
+.chunk{
+  display:inline-flex;gap:8px;flex-wrap:wrap;padding:6px;border-radius:12px;
+  border:1.7px dashed transparent;transition:border-color .3s;
+}
+.chunk.show{border-color:rgba(245,244,239,.6)}
+.chunk .chip{transform:none}
+.trackwrap{position:relative;height:9px;margin-top:12px}
+.trackbase{position:absolute;inset:3px 0;border-bottom:2px dotted rgba(245,244,239,.28)}
+.fill{
+  position:absolute;left:0;top:0;bottom:0;width:0;border-radius:4px;
+}
+.fill{
+  background:repeating-linear-gradient(90deg,rgba(245,244,239,.85) 0 6px,rgba(245,244,239,.45) 6px 9px);
+}
+.status{font-size:1.15rem;color:var(--chalk-dim);margin-top:9px;min-height:22px}
+@media(max-width:640px){.slate{padding:20px 16px 46px}}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+  .chip,.chunk,.lane{transform:none!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="slip1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+<div class="wrap">
+  <div class="board"><div class="slate">
+    <button class="replay" id="replay" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
+    <div class="axis">
+      <span class="axislbl">time &rarr;</span>
+      <div class="axistrack" id="axistrack"><div class="playhead" id="playhead"></div></div>
+    </div>
+    <div class="lane v">
+      <div class="lanehead">
+        <span class="lanename">VANILLA DECODING</span>
+        <span class="donebadge" id="doneV">done &middot; 10.0s</span>
+      </div>
+      <div class="chips" id="chipsV"></div>
+      <div class="trackwrap"><div class="trackbase"></div><div class="fill" id="fillV"></div></div>
+      <div class="status" id="statusV"></div>
+    </div>
+
+    <div class="lane s">
+      <div class="lanehead">
+        <span class="lanename">SPECULATIVE DECODING</span>
+        <span class="donebadge" id="doneS">done &middot; 3.3s &#10003;</span>
+      </div>
+      <div class="chips" id="chipsS"></div>
+      <div class="trackwrap"><div class="trackbase"></div><div class="fill" id="fillS"></div></div>
+      <div class="status" id="statusS"></div>
+    </div>
+
+  </div></div>
+</div>
+
+<script>
+(function(){
+  var words = ['Happiness','can','be','found','even','in','the','darkest','of','times'];
+  var PASS = 1.0, V_DONE = 10.0, S_DONE = 3.3, AXIS = 10.5, LOOP = 11.5;
+  var rounds = [{n:5, t:1.65},{n:5, t:3.3}];
+
+  var track = document.getElementById('axistrack');
+  for (var sec = 0; sec <= 10; sec++){
+    var x = (sec / AXIS * 100) + '%';
+    var num = document.createElement('span');
+    num.className = 'axisnum'; num.style.left = x; num.textContent = sec + 's';
+    track.appendChild(num);
+    var tk = document.createElement('span');
+    tk.className = 'axistick'; tk.style.left = x;
+    track.appendChild(tk);
+  }
+  var playhead = document.getElementById('playhead');
+
+  var cv = document.getElementById('chipsV'), chipsV = [];
+  words.forEach(function(w){
+    var c = document.createElement('span');
+    c.className = 'chip'; c.textContent = w;
+    cv.appendChild(c); chipsV.push(c);
+  });
+
+  var cs = document.getElementById('chipsS'), chunks = [];
+  var start = 0;
+  rounds.forEach(function(r){
+    var g = document.createElement('span');
+    g.className = 'chunk';
+    for (var i = 0; i < r.n; i++){
+      var c = document.createElement('span');
+      c.className = 'chip'; c.textContent = words[start + i];
+      g.appendChild(c);
+    }
+    start += r.n;
+    cs.appendChild(g); chunks.push(g);
+  });
+
+  var fillV = document.getElementById('fillV'), fillS = document.getElementById('fillS');
+    var doneV = document.getElementById('doneV'), doneS = document.getElementById('doneS');
+  var statusV = document.getElementById('statusV'), statusS = document.getElementById('statusS');
+
+  function paint(t){
+    var tv = Math.min(t, V_DONE), ts = Math.min(t, S_DONE);
+    playhead.style.left = (Math.min(t, AXIS) / AXIS * 100) + '%';
+    fillV.style.width = (tv / AXIS * 100) + '%';
+    fillS.style.width = (ts / AXIS * 100) + '%';
+
+    chipsV.forEach(function(c, i){ c.classList.toggle('show', t >= (i + 1) * PASS); });
+    statusV.textContent = t >= V_DONE ? '10 target passes' :
+      'target pass ' + Math.min(10, Math.floor(t / PASS) + 1) + ' of 10\u2026';
+
+    chunks.forEach(function(g, i){
+      var on = t >= rounds[i].t;
+      g.classList.toggle('show', on);
+      for (var j = 0; j < g.children.length; j++) g.children[j].classList.toggle('show', on);
+    });
+    statusS.textContent = t >= S_DONE ? '2 rounds \u00b7 2 target passes' :
+      (t >= rounds[0].t ? 'round 2: drafting + verifying\u2026' : 'round 1: drafting + verifying\u2026');
+
+    doneV.style.opacity = t >= V_DONE ? '1' : '0';
+    doneS.style.opacity = t >= S_DONE ? '1' : '0';
+  }
+
+  var replay = document.getElementById('replay');
+  var t0 = performance.now();
+  var running = false;
+  function tick(){
+    var t = (performance.now() - t0) / 1000;
+    if (t >= LOOP){
+      paint(LOOP);
+      running = false;
+      return;
+    }
+    paint(t);
+    requestAnimationFrame(tick);
+  }
+  running = true;
+  tick();
+  replay.addEventListener('click', function(){
+    t0 = performance.now();
+    if (!running){ running = true; tick(); }
+  });
+
+  window.addEventListener('beforeprint', function(){
+    try { if (typeof raf !== 'undefined' && raf) cancelAnimationFrame(raf); } catch(e){}
+    try { paint(1e9); } catch(e){}
+  });
+  function postHeight(){
+    parent.postMessage({
+      chalkHeight: Math.ceil(document.body.getBoundingClientRect().height),
+      chalkSrc: location.pathname.split('/').pop()
+    }, '*');
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(postHeight);
+  setTimeout(postHeight, 1500);
+})();
+</script>
+<script>
+(function(){
+  // hand-drawn slips: long strokes are harder to draw straight, so the longer
+  // the element, the more likely (and eventually certain) a waver somewhere.
+  var els = document.querySelectorAll('.slate span, .slate button, .slate td, .slate th, .slate .tlabel, .slate .tline, .slate .panettl, .slate .outerttl, .slate .note, .slate .pic, .slate .share, .slate .name, .slate .verdict, .slate .setup, .slate .given, .slate .bar, .slate .seg, .slate .card, .slate .pill, .slate .pane, .slate .panel, .slate .trow, .slate .outer, .slate .chunk');
+  var slips = ['url(#slip1)', 'url(#slip2)', 'url(#slip3)'];
+  els.forEach(function(el, i){
+    var w = el.offsetWidth || 0;
+    var r = ((i * 61 + 17) % 100) / 100;
+    var pClean = w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0;
+    if (r < pClean) return;
+    el.style.filter = slips[i % 3];
+  });
+})();
+</script>
+</body>
+</html>

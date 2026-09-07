@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figure 5 — Independent top-1 vs path selection</title>
+<style>@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}
+.prefix{font-size:1.25rem;text-align:center;margin-bottom:14px;color:var(--chalk)}
+.prefix .q{color:var(--chalk-dim)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.colttl{font-size:.95rem;color:var(--chalk-dim);text-align:center;margin-bottom:6px}
+.col{display:flex;flex-direction:column;gap:6px;align-items:center}
+.cand{border:1.6px solid rgba(245,244,239,.55);border-radius:9px 7px 10px 6px;
+  padding:3px 10px;font-size:1.05rem;color:var(--chalk-dim);background:rgba(245,244,239,.04)}
+.cand.pick{border-color:rgba(245,244,239,.95);color:var(--chalk);font-weight:700}
+.cand.dup{border-style:dashed;color:#e8b9a8;border-color:rgba(232,150,120,.8)}
+.res{font-size:1.15rem;text-align:center;margin:6px 0 10px}
+.res .bad{color:#e8b9a8}
+.res .ok{color:#bcd9a8}
+.picrow{text-align:center;font-size:2rem;margin:2px 0 8px;line-height:1}
+</style>
+<style>
+:root{
+  --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
+  --chalk:#F5F4EF;
+  --chalk-dim:rgba(245,244,239,.55);
+  --chalk-faint:rgba(245,244,239,.32);
+  --board:#12291d;
+  --frame:#7A5230;
+}
+*{box-sizing:border-box}
+html{zoom:0.8}
+body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
+.wrap{max-width:940px;margin:0 auto}
+.board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
+.slate{
+  position:relative;font-family:'PencilPete',cursive;
+  border-radius:10px;padding:30px 34px 52px;color:var(--chalk);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 15%, rgba(255,255,255,0.03), transparent 60%),
+    var(--board);
+}
+.cols{display:grid;grid-template-columns:1fr 1.15fr;gap:20px;align-items:start}
+@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.pane{border:1.5px dashed rgba(245,244,239,.45);border-radius:12px;padding:15px 17px;display:flex;flex-direction:column}
+.pane.a{transform:rotate(-0.3deg)}
+.pane.b{transform:rotate(0.25deg)}
+.panettl{font-size:1.25rem;font-weight:700;letter-spacing:.09em;color:var(--chalk);margin-bottom:12px}
+.el{opacity:0;transition:opacity .45s}
+.el.show{opacity:1}
+.posrow{display:flex;gap:8px;font-size:1.05rem;color:var(--chalk-dim);margin-bottom:4px;padding-left:2px}
+.posrow span{width:54px;text-align:center}
+.tokrow{display:flex;gap:8px;margin-bottom:2px}
+.tok{
+  width:54px;text-align:center;
+  border:1.7px solid rgba(245,244,239,.75);border-radius:10px 8px 11px 7px;
+  padding:4px 0;font-size:1.2rem;font-weight:700;color:var(--chalk);
+  background:rgba(245,244,239,.05);
+  opacity:0;transition:opacity .35s,border-color .35s,color .35s;
+}
+.tok:nth-child(odd){transform:rotate(-1deg)}
+.tok:nth-child(even){transform:rotate(.8deg)}
+.tok.show{opacity:1}
+.tok.faded{border-color:var(--chalk-faint);color:var(--chalk-faint);border-style:dashed}
+.tok.chosen{border-color:rgba(245,244,239,.95);background:rgba(245,244,239,.13)}
+.linkrow{position:relative;height:16px;margin:0 0 2px}
+.link{
+  position:absolute;top:7px;height:0;border-top:1.7px dashed rgba(245,244,239,.7);
+  opacity:0;transition:opacity .35s;
+}
+.branch{
+  font-size:1.05rem;color:var(--chalk-dim);padding-left:34px;margin-top:-2px;
+}
+.note{font-size:1.08rem;color:var(--chalk-dim);line-height:1.45;margin-top:10px}
+.annot{font-size:1.02rem;color:var(--chalk-dim)}
+.rule{border:0;border-top:1.5px dashed rgba(245,244,239,.3);margin:22px 0 18px}
+.acc{margin-top:auto;padding-top:14px}
+.acclbl{font-size:1.1rem;color:var(--chalk-dim);letter-spacing:.08em;margin-bottom:6px}
+.curvewrap{display:flex;align-items:flex-end;gap:10px}
+svg{overflow:visible}
+.curve{
+  fill:none;stroke:rgba(245,244,239,.85);stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+  transition:stroke-dashoffset 1.4s linear;
+}
+.curve.draw{stroke-dashoffset:0}
+.axisline{stroke:rgba(245,244,239,.4);stroke-width:1.6}
+.axistxt{font-size:13px;fill:rgba(245,244,239,.5);font-family:'PencilPete',cursive}
+.replay{
+  position:absolute;bottom:18px;right:28px;z-index:2;
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;padding:0;
+}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{
+  width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);
+}
+.replay:hover .eraser{filter:brightness(1.08)}
+.replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+  .pane,.tok{transform:none!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="slip1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+<div class="wrap">
+  <div class="board"><div class="slate">
+    <div class="prefix">verified prefix: "The fastest way to <span class="q">__ __ __ __</span>"</div>
+    <div class="cols">
+
+      <!-- LEFT: independent top-1 -->
+      <div class="pane a">
+        <div class="panettl">INDEPENDENT TOP-1 (DFLASH)</div>
+        <div class="el grid4" data-t="0.5">
+          <div><div class="colttl">pos 1</div><div class="col"><span class="cand pick">get</span><span class="cand">learn</span><span class="cand">travel</span></div></div>
+          <div><div class="colttl">pos 2</div><div class="col"><span class="cand pick">to</span><span class="cand">started</span><span class="cand">around</span></div></div>
+          <div><div class="colttl">pos 3</div><div class="col"><span class="cand pick dup">to</span><span class="cand">school</span><span class="cand">work</span></div></div>
+          <div><div class="colttl">pos 4</div><div class="col"><span class="cand pick">school</span><span class="cand">quickly</span><span class="cand">early</span></div></div>
+        </div>
+        <div class="el res" data-t="2.2">"get <span class="bad">to to</span> school" &#10007;</div>
+        <div class="el picrow" data-t="2.5"><svg width="170" height="52" viewBox="0 0 170 52" fill="none" stroke="#F5F4EF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="road blocked by construction">
+  <!-- stopped walker, arms up -->
+  <circle cx="22" cy="12" r="5"/>
+  <path d="M22 17 L22 32"/>
+  <path d="M22 20 L13 14 M22 20 L31 14"/>
+  <path d="M22 32 L16 44 M22 32 L28 44"/>
+  <!-- question mark -->
+  <path d="M34 6 C38 2, 44 4, 42 9 C41 11, 38 11, 38 14" stroke-opacity=".6"/>
+  <path d="M38 18 L38 18.6" stroke-opacity=".6"/>
+  <!-- arrow, cut short -->
+  <path d="M50 28 L78 28" stroke-opacity=".7"/>
+  <!-- construction barrier -->
+  <path d="M96 22 L146 22 L146 32 L96 32 Z"/>
+  <path d="M104 32 L100 44 M138 32 L142 44"/>
+  <path d="M102 32 L112 22 M116 32 L126 22 M130 32 L140 22"/>
+</svg></div>
+        <div class="el note" data-t="2.9">each position picks alone, neighbors collide</div>
+        <div class="acc">
+          <div class="el acclbl" data-t="7.6">acceptance</div>
+          <div class="curvewrap">
+            <svg width="190" height="76" viewBox="0 0 190 76" aria-label="acceptance sags toward later positions">
+              <line class="axisline" x1="10" y1="66" x2="180" y2="66"/>
+              <line class="axisline" x1="10" y1="8" x2="10" y2="66"/>
+              <path id="curveA" class="curve" d="M14,16 L52,18 L86,24 L112,40 L140,56 L176,62"/>
+              <text class="axistxt" x="176" y="76" text-anchor="end">pos</text>
+            </svg>
+            <span class="el annot" data-t="9.4">&larr; tail sags</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: path selection -->
+      <div class="pane b">
+        <div class="panettl">PATH SELECTION (DFLASH 2)</div>
+        <div class="el grid4" data-t="3.6">
+          <div><div class="colttl">pos 1</div><div class="col"><span class="cand pick">get</span><span class="cand">learn</span><span class="cand">travel</span></div></div>
+          <div><div class="colttl">pos 2</div><div class="col"><span class="cand pick">to</span><span class="cand">started</span><span class="cand">around</span></div></div>
+          <div><div class="colttl">pos 3</div><div class="col"><span class="cand">to</span><span class="cand pick">school</span><span class="cand">work</span></div></div>
+          <div><div class="colttl">pos 4</div><div class="col"><span class="cand">school</span><span class="cand pick">quickly</span><span class="cand">early</span></div></div>
+        </div>
+        <div class="el res" data-t="5.4">"get <span class="ok">to school quickly</span>" &#10003;</div>
+        <div class="el picrow" data-t="5.7"><svg width="170" height="52" viewBox="0 0 170 52" fill="none" stroke="#F5F4EF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="running to school">
+  <!-- runner -->
+  <circle cx="22" cy="12" r="5"/>
+  <path d="M22 17 L20 30"/>
+  <path d="M21 21 L12 24 M21 21 L30 17"/>
+  <path d="M20 30 L11 38 M20 30 L28 36 L27 44"/>
+  <!-- motion dashes -->
+  <path d="M2 24 L7 24 M0 30 L5 30" stroke-opacity=".55"/>
+  <!-- arrow -->
+  <path d="M44 28 L86 28 M86 28 L79 23 M86 28 L79 33" stroke-opacity=".7"/>
+  <!-- schoolhouse -->
+  <path d="M104 44 L104 24 L124 12 L144 24 L144 44 Z"/>
+  <path d="M120 44 L120 32 L128 32 L128 44"/>
+  <path d="M124 12 L124 3 L132 5 L124 7"/>
+</svg></div>
+        <div class="el note" data-t="6.2">adjacent pairs scored, one coherent path chosen</div>
+        <div class="acc">
+          <div class="el acclbl" data-t="7.6">acceptance</div>
+          <div class="curvewrap">
+            <svg width="190" height="76" viewBox="0 0 190 76" aria-label="acceptance holds longer before dipping">
+              <line class="axisline" x1="10" y1="66" x2="180" y2="66"/>
+              <line class="axisline" x1="10" y1="8" x2="10" y2="66"/>
+              <path id="curveB" class="curve" d="M14,16 L54,17 L92,19 L124,23 L152,34 L176,50"/>
+              <text class="axistxt" x="176" y="76" text-anchor="end">pos</text>
+            </svg>
+            <span class="el annot" data-t="9.4">&larr; local conv lifts the tail</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
+  </div></div>
+</div>
+
+<script>
+(function(){
+  var END = 10.6;
+  var timed = Array.prototype.slice.call(document.querySelectorAll('.el[data-t]'))
+    .map(function(el){ return { el: el, t: parseFloat(el.dataset.t) }; });
+
+  ['curveA','curveB'].forEach(function(id){
+    var p = document.getElementById(id);
+    var len = p.getTotalLength ? p.getTotalLength() : 200;
+    p.style.setProperty('--len', len);
+  });
+  var curveA = document.getElementById('curveA'), curveB = document.getElementById('curveB');
+
+  function paint(t){
+    timed.forEach(function(o){ o.el.classList.toggle('show', t >= o.t); });
+    curveA.classList.toggle('draw', t >= 8.0);
+    curveB.classList.toggle('draw', t >= 8.0);
+  }
+
+  var replay = document.getElementById('replay');
+  var t0 = performance.now(), raf = null;
+  function tick(){
+    var t = (performance.now() - t0) / 1000;
+    if (t >= END){ paint(END); raf = null; return; }
+    paint(t);
+    raf = requestAnimationFrame(tick);
+  }
+  function play(){
+    if (raf) cancelAnimationFrame(raf);
+    t0 = performance.now();
+    paint(0);
+    raf = requestAnimationFrame(tick);
+  }
+  replay.addEventListener('click', play);
+  play();
+
+  window.addEventListener('beforeprint', function(){
+    try { if (raf) cancelAnimationFrame(raf); } catch(e){}
+    try { paint(1e9); } catch(e){}
+  });
+  if (location.search.indexOf('final') !== -1) setTimeout(function(){
+    try { if (raf) cancelAnimationFrame(raf); } catch(e){}
+    try { paint(1e9); } catch(e){}
+  }, 300);
+
+  function postHeight(){
+    parent.postMessage({
+      chalkHeight: Math.ceil(document.body.getBoundingClientRect().height) ,
+      chalkSrc: location.pathname.split('/').pop()
+    }, '*');
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(postHeight);
+  setTimeout(postHeight, 1500);
+})();
+</script>
+</body>
+</html>

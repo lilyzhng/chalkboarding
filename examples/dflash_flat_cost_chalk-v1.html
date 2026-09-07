@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drafting cost vs block size: EAGLE-3 vs DFlash</title>
+<style>@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}</style>
+<style>
+:root{
+  --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
+  --_ink: var(--ink, #2A2A26);
+  --chalk:#F5F4EF;
+  --chalk-dim:rgba(245,244,239,.55);
+  --board:#12291d;
+  --frame:#7A5230;
+}
+*{box-sizing:border-box}
+html{zoom:0.8}
+body{
+  margin:0;padding:0 0 4px;background:transparent;
+  font-family:var(--_serif);
+}
+.wrap{max-width:940px;margin:0 auto}
+.board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
+.slate{
+  position:relative;font-family:'PencilPete',cursive;
+  border-radius:10px;padding:30px 34px 26px;color:var(--chalk);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 15%, rgba(255,255,255,0.03), transparent 60%),
+    var(--board);
+}
+.charttitle{font-size:1.35rem;font-weight:700;letter-spacing:.06em;margin:0 0 6px;transform:rotate(-0.3deg)}
+.chartwrap{width:100%;max-width:700px;margin:0 auto}
+.chartwrap svg{width:100%;height:auto;display:block}
+.st{fill:var(--chalk)}
+.sd{fill:var(--chalk-dim)}
+.axisl{stroke:rgba(245,244,239,.7);stroke-width:2;fill:none}
+.gridl{stroke:rgba(245,244,239,.13);stroke-width:1.2;stroke-dasharray:5 6}
+.costline{fill:none;stroke:var(--chalk);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.15s ease .15s}
+.draw.on{stroke-dashoffset:0}
+.fades{opacity:0;transition:opacity .6s ease}
+.fades.on{opacity:1}
+.markerl{stroke:rgba(245,244,239,.5);stroke-width:1.5;stroke-dasharray:4 5}
+.sliderbox{width:100%;max-width:620px;margin:2px auto 0;padding:0 6px}
+input[type=range].gslide{
+  -webkit-appearance:none;appearance:none;background:transparent;
+  width:100%;height:26px;cursor:pointer;display:block;margin:0;
+}
+input[type=range].gslide::-webkit-slider-runnable-track{
+  height:2px;
+  background:repeating-linear-gradient(90deg, rgba(245,244,239,.5) 0 7px, transparent 7px 13px);
+}
+input[type=range].gslide::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:19px;height:19px;border-radius:50% 46% 52% 48%;
+  background:var(--chalk);border:2px solid rgba(18,41,29,.9);
+  margin-top:-8.5px;box-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+input[type=range].gslide::-moz-range-track{
+  height:2px;
+  background:repeating-linear-gradient(90deg, rgba(245,244,239,.5) 0 7px, transparent 7px 13px);
+}
+input[type=range].gslide::-moz-range-thumb{
+  width:17px;height:17px;border-radius:50% 46% 52% 48%;
+  background:var(--chalk);border:2px solid rgba(18,41,29,.9);
+}
+.gticks{display:flex;justify-content:space-between;margin:2px 1px 0}
+.gtick{
+  font-size:.95rem;color:var(--chalk-dim);cursor:pointer;
+  min-width:18px;text-align:center;border:1.5px solid transparent;
+  border-radius:8px 6px 9px 5px;padding:0 2px;
+}
+.gtick:hover{color:var(--chalk)}
+.gtick.cur{color:var(--chalk);border-color:rgba(245,244,239,.65);font-weight:700}
+.reading{
+  text-align:center;font-size:1.3rem;margin:14px auto 2px;min-height:30px;
+  color:var(--chalk);
+}
+.reading .rb{font-weight:700}
+.footnote{
+  text-align:center;font-size:1.05rem;color:var(--chalk-dim);margin-top:6px;
+  transform:rotate(0.25deg);
+}
+.replay{
+  position:absolute;bottom:18px;right:28px;z-index:2;
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;padding:0;
+}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{
+  width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);
+}
+.replay:hover .eraser{filter:brightness(1.08)}
+.replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+  .charttitle,.footnote{transform:none!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="slip1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+<div class="wrap">
+  <div class="board"><div class="slate">
+    <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
+    <div class="charttitle">cost of drafting a block of &gamma; tokens</div>
+    <div class="chartwrap">
+      <svg viewBox="0 0 680 372" role="img" aria-label="Line chart: drafting time in layer-passes versus block size gamma. EAGLE-3 rises linearly, DFlash stays flat at 5.">
+        <!-- gridlines + y ticks -->
+        <line class="gridl" x1="70" y1="237.5" x2="650" y2="237.5"/>
+        <line class="gridl" x1="70" y1="155" x2="650" y2="155"/>
+        <line class="gridl" x1="70" y1="72.5" x2="650" y2="72.5"/>
+        <text class="sd" x="60" y="242" font-size="13" text-anchor="end">5</text>
+        <text class="sd" x="60" y="159" font-size="13" text-anchor="end">10</text>
+        <text class="sd" x="60" y="77" font-size="13" text-anchor="end">15</text>
+        <!-- axes -->
+        <path class="axisl" filter="url(#slip3)" d="M58,320 H652 M646,315 L656,320 L646,325"/>
+        <path class="axisl" filter="url(#slip3)" d="M70,332 V44 M65,50 L70,40 L75,50"/>
+        <text class="sd" x="78" y="34" font-size="13.5" transform="rotate(-1 78 34)">lower is better &darr;</text>
+        <text class="sd" transform="rotate(-90 24 180)" x="24" y="180" font-size="14.5" text-anchor="middle">drafting time (layer-passes)</text>
+        <text class="sd" x="360" y="364" font-size="14.5" text-anchor="middle">block size &gamma;</text>
+        <!-- x ticks -->
+        <g class="sd" font-size="11.5" text-anchor="middle">
+          <text x="70" y="340">1</text><text x="108.7" y="340">2</text><text x="147.3" y="340">3</text>
+          <text x="186" y="340">4</text><text x="224.7" y="340">5</text><text x="263.3" y="340">6</text>
+          <text x="302" y="340">7</text><text x="340.7" y="340">8</text><text x="379.3" y="340">9</text>
+          <text x="418" y="340">10</text><text x="456.7" y="340">11</text><text x="495.3" y="340">12</text>
+          <text x="534" y="340">13</text><text x="572.7" y="340">14</text><text x="611.3" y="340">15</text>
+          <text x="650" y="340">16</text>
+        </g>
+        <!-- cost lines revealed together by a widening clip window -->
+        <clipPath id="sweepclip"><rect id="cliprect" x="58" y="30" width="600" height="310"/></clipPath>
+        <g clip-path="url(#sweepclip)">
+        <path id="lineE" class="costline draw" pathLength="1" filter="url(#slip2)"
+          d="M70,303.5 L108.7,288.2 L147.3,270 L186,255.5 L224.7,238.5 L263.3,220 L302,203.5 L340.7,189 L379.3,171.5 L418,155 L456.7,138.5 L495.3,122 L534,107.5 L572.7,90 L611.3,73.5 L650,56"/>
+        <path id="lineD" class="costline draw" pathLength="1" filter="url(#slip1)" style="transition-delay:.55s"
+          d="M70,238.5 L108.7,236 L147.3,239 L186,236.5 L224.7,238 L263.3,236 L302,238.5 L340.7,237 L379.3,238.5 L418,236.5 L456.7,238 L495.3,236.5 L534,238.5 L572.7,237 L611.3,238.5 L650,237"/>
+        </g>
+        <!-- break-even annotation, appears when the lines cross -->
+        <g class="fades" id="finBE">
+          <circle cx="224.7" cy="237.5" r="13" fill="none" stroke="rgba(245,244,239,.6)" stroke-width="1.4" stroke-dasharray="4 4"/>
+          <text class="st" x="222" y="206" font-size="14.5" text-anchor="middle" transform="rotate(-2 222 206)">break-even</text>
+        </g>
+        <!-- labels + annotations, fade in after the sweep -->
+        <g class="fades" id="fin">
+          <text class="st" x="646" y="46" font-size="16.5" text-anchor="end" filter="url(#slip3)">EAGLE-3: &gamma; layer-passes</text>
+          <text class="st" x="646" y="222" font-size="16.5" text-anchor="end" filter="url(#slip3)">DFlash: 5, flat</text>
+          <g transform="rotate(-1.5 470 285)">
+            <text class="st" x="470" y="280" font-size="15" text-anchor="middle">5 layers, 16 tokens,</text>
+            <text class="st" x="470" y="301" font-size="15" text-anchor="middle">still cheaper than EAGLE-3 at 8</text>
+          </g>
+          <path d="M512,272 Q 530,256 552,246 M546,249 L556,243 L549,253" stroke="rgba(245,244,239,.75)" stroke-width="1.5" fill="none" filter="url(#slip3)"/>
+        </g>
+        <!-- sweep tip dots -->
+        <circle id="tipE" cx="70" cy="303.5" r="4" fill="#F5F4EF" opacity="0"/>
+        <circle id="tipD" cx="70" cy="238.5" r="4" fill="#F5F4EF" opacity="0"/>
+        <!-- slider marker -->
+        <g id="marker">
+          <line id="mkline" class="markerl" x1="340.7" y1="40" x2="340.7" y2="320"/>
+          <circle id="dotE" cx="340.7" cy="188" r="4.5" fill="#F5F4EF"/>
+          <circle id="dotD" cx="340.7" cy="237.5" r="4.5" fill="#F5F4EF"/>
+          <text id="mkg" class="st" x="340.7" y="32" font-size="14" text-anchor="middle">&gamma; = 8</text>
+        </g>
+      </svg>
+    </div>
+    <div class="sliderbox">
+      <input type="range" class="gslide" id="gslide" min="1" max="16" step="1" value="8" aria-label="block size gamma">
+      <div class="gticks" id="gticks"></div>
+    </div>
+    <div class="reading" id="reading"></div>
+  </div></div>
+</div>
+
+<script>
+(function(){
+  var X0 = 70, DX = 580 / 15;
+  function gx(g){ return X0 + (g - 1) * DX; }
+  function gy(v){ return 320 - v * 16.5; }
+
+  var g = 8;
+  var slide = document.getElementById('gslide');
+  var ticksBox = document.getElementById('gticks');
+  var reading = document.getElementById('reading');
+  var mkline = document.getElementById('mkline');
+  var dotE = document.getElementById('dotE');
+  var dotD = document.getElementById('dotD');
+  var mkg = document.getElementById('mkg');
+  var ticks = [];
+
+  for (var i = 1; i <= 16; i++){
+    (function(v){
+      var s = document.createElement('span');
+      s.className = 'gtick'; s.textContent = v;
+      s.addEventListener('click', function(){ manual(v); });
+      ticksBox.appendChild(s); ticks.push(s);
+    })(i);
+  }
+
+  function setG(v){
+    g = v;
+    slide.value = v;
+    var x = gx(v);
+    mkline.setAttribute('x1', x); mkline.setAttribute('x2', x);
+    dotE.setAttribute('cx', x); dotE.setAttribute('cy', gy(v));
+    dotD.setAttribute('cx', x); dotD.setAttribute('cy', gy(5));
+    mkg.setAttribute('x', x);
+    mkg.textContent = '\u03b3 = ' + v;
+    ticks.forEach(function(t, j){ t.classList.toggle('cur', j + 1 === v); });
+    var msg = '\u03b3 = ' + v + ': EAGLE-3 costs ' + v + ' layer-passes, DFlash costs 5.';
+    if (v > 5) msg += ' DFlash ahead by ' + (v - 5) + '.';
+    if (v === 5) msg += ' Break-even.';
+    if (v < 5) msg += ' EAGLE-3 ahead for now.';
+    reading.textContent = msg;
+  }
+
+  // step-by-step sweep: gamma grows 1 -> 16, the lines draw segment by segment
+  var lineE = document.getElementById('lineE');
+  var lineD = document.getElementById('lineD');
+  var fin = document.getElementById('fin');
+  var finBE = document.getElementById('finBE');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // we drive a shared clip window during the sweep
+  lineE.classList.remove('draw'); lineD.classList.remove('draw');
+  lineE.style.strokeDasharray = 'none'; lineD.style.strokeDasharray = 'none';
+  var cliprect = document.getElementById('cliprect');
+
+  function setLines(v){
+    cliprect.setAttribute('width', Math.max(0, gx(v) - 58 + 4));
+    var x = gx(v);
+    tipE.setAttribute('cx', x); tipE.setAttribute('cy', gy(v));
+    tipD.setAttribute('cx', x); tipD.setAttribute('cy', gy(5));
+    var mid = v > 1 && v < 16;
+    tipE.setAttribute('opacity', mid ? '0.9' : '0');
+    tipD.setAttribute('opacity', mid ? '0.9' : '0');
+  }
+  var tipE = document.getElementById('tipE'), tipD = document.getElementById('tipD');
+
+  var playTimer = null;
+  function endState(){
+    if (playTimer){ clearTimeout(playTimer); playTimer = null; }
+    setLines(16);
+    fin.classList.add('on'); finBE.classList.add('on');
+  }
+
+  function play(){
+    if (playTimer){ clearTimeout(playTimer); playTimer = null; }
+    fin.classList.remove('on'); finBE.classList.remove('on');
+    if (reduced){ setG(8); endState(); return; }
+    var step = 1;
+    setG(1); setLines(1);
+    function next(){
+      step++;
+      setG(step); setLines(step);
+      if (step === 5){ finBE.classList.add('on'); }   // lines cross: reveal break-even
+      if (step >= 16){ fin.classList.add('on'); playTimer = null; return; }
+      playTimer = setTimeout(next, step === 5 ? 450 : 340);
+    }
+    playTimer = setTimeout(next, 600);
+  }
+
+  // manual interaction takes over: cancel the sweep, show the full lines
+  function manual(v){
+    if (playTimer){ clearTimeout(playTimer); playTimer = null; }
+    setLines(16);
+    fin.classList.add('on'); finBE.classList.add('on');
+    setG(v);
+  }
+  slide.addEventListener('input', function(){ manual(+slide.value); });
+
+  document.getElementById('replay').addEventListener('click', play);
+
+  play();
+
+  window.addEventListener('beforeprint', function(){
+    try { if (playTimer) clearTimeout(playTimer); } catch(e){}
+    setG(8); endState();
+  });
+  function postHeight(){
+    parent.postMessage({
+      chalkHeight: Math.ceil(document.body.getBoundingClientRect().height),
+      chalkSrc: location.pathname.split('/').pop()
+    }, '*');
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(postHeight);
+  setTimeout(postHeight, 1500);
+})();
+</script>
+<script>
+(function(){
+  // hand-drawn slips: long strokes are harder to draw straight, so the longer
+  // the element, the more likely (and eventually certain) a waver somewhere.
+  var els = document.querySelectorAll('.slate span, .slate button, .slate td, .slate th, .slate .tlabel, .slate .tline, .slate .panettl, .slate .outerttl, .slate .note, .slate .pic, .slate .share, .slate .name, .slate .verdict, .slate .setup, .slate .given, .slate .bar, .slate .seg, .slate .card, .slate .pill, .slate .pane, .slate .panel, .slate .trow, .slate .outer, .slate .chunk, .slate .charttitle, .slate .reading, .slate .footnote, .slate .gtick');
+  var slips = ['url(#slip1)', 'url(#slip2)', 'url(#slip3)'];
+  els.forEach(function(el, i){
+    var w = el.offsetWidth || 0;
+    var r = ((i * 61 + 17) % 100) / 100;
+    var pClean = w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0;
+    if (r < pClean) return;
+    el.style.filter = slips[i % 3];
+  });
+})();
+</script>
+</body>
+</html>

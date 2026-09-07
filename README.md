@@ -37,11 +37,17 @@ Workflow it enforces:
 `examples/` holds representative figures from the NeurIPS set (open directly
 in a browser; the font file must sit next to them):
 
-- `figure1_chalk.html` — twin timeline lanes, chips + chunks, playhead
-- `dflash_diffusion_analogy_chalk-v5.html` — pixel-grid serial vs parallel canvases
-- `figure5_chalk.html` — SVG curve draw-on plot
-- `dflash_flat_cost_chalk-v1.html` — interactive slider figure
-- `rejection_sampling_chalk-v1.html` — static-leaning diagram
+- `rejection_sampling_chalk-v1.html` — rejection sampling; static-leaning diagram
+- `dflash_diffusion_analogy_chalk-v5.html` — the kangaroo: pixel-grid serial vs
+  parallel canvases
+- `figure5_chalk.html` — the "go to school" example: independent top-1 vs path
+  selection, SVG curve draw-on
+- `figure6_chalk.html` — the full decoding race (from the numbered site-figure set)
+- `dflash_flat_cost_chalk-v1.html` — DFlash drafting cost vs block size,
+  interactive slider
+- `dflash_kv_injection_chalk-v1.html` — DFlash KV injection: the multi-diagram
+  figure (SVG-heavy, many labeled panels)
+- `figure1_chalk.html` — twin timeline panels, chips + chunks, playhead
 
 ## Before open-sourcing
 

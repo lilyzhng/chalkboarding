@@ -38,14 +38,14 @@ body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
 }
 .replay:hover .eraser{filter:brightness(1.08)}
 .replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
-.lane{
+.panel{
   border:1.5px dashed rgba(245,244,239,.45);border-radius:12px;
   padding:16px 18px;margin-bottom:18px;
 }
-.lane:last-child{margin-bottom:0}
-.lane.a{transform:rotate(-0.3deg)}
-.lanehead{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
-.lanename{color:var(--chalk);font-size:1.5rem;font-weight:700;letter-spacing:.18em}
+.panel:last-child{margin-bottom:0}
+.panel.a{transform:rotate(-0.3deg)}
+.panelhead{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.panelname{color:var(--chalk);font-size:1.5rem;font-weight:700;letter-spacing:.18em}
 .donebadge{
   color:var(--chalk);font-size:1.15rem;margin-left:auto;
   border:1.5px solid currentColor;border-radius:50px;
@@ -72,7 +72,7 @@ body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
 @media(max-width:640px){.slate{padding:20px 16px 46px}}
 @media(prefers-reduced-motion:reduce){
   *{transition-duration:.01ms!important}
-  .chip,.lane,.donebadge{transform:none!important}
+  .chip,.panel,.donebadge{transform:none!important}
 }
 </style>
 </head>
@@ -86,9 +86,9 @@ body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
   <div class="board"><div class="slate">
     <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
 
-    <div class="lane a">
-      <div class="lanehead">
-        <span class="lanename">EXAMPLE LANE</span>
+    <div class="panel a">
+      <div class="panelhead">
+        <span class="panelname">EXAMPLE PANEL</span>
         <span class="donebadge" id="done">done &#10003;</span>
       </div>
       <div class="chips" id="chips"></div>

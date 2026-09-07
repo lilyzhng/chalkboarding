@@ -20,7 +20,7 @@ them.
 
 All chalk-colored things derive from `245,244,239` at different alphas:
 - borders of active elements: `.75`
-- dashed lane borders: `.45`
+- dashed panel borders: `.45`
 - gridlines / track dots: `.13`–`.3`
 - fills inside chips: `.05` (barely-there chalk residue)
 
@@ -63,7 +63,7 @@ and chalky board is part of the look.
 - `PencilPete.ttf` sits **next to the output HTML** (relative URL — keeps the
   figure portable and iframe-friendly). Copy it from this skill's `assets/`.
 - Everything inside `.slate` inherits `'PencilPete',cursive`.
-- The font runs small: body-ish text is `1.15–1.35rem`, lane titles `1.3–1.5rem`
+- The font runs small: body-ish text is `1.15–1.35rem`, panel titles `1.3–1.5rem`
   bold with `letter-spacing:.08em–.18em` (chalk capitals are written spaced out).
 - `assets/ChalkBoard.ttf` is an alternative display face for big headline
   lettering; PencilPete is the default workhorse.
@@ -120,12 +120,12 @@ path or group.
 
 ### 3. Geometry that refuses to be perfect
 
-- Alternating micro-rotations on containers: `.lane.v{transform:rotate(-0.3deg)}`,
-  `.lane.s{transform:rotate(0.25deg)}`; badges get a bit more (±1.2–1.4°).
+- Alternating micro-rotations on containers: `.panel.v{transform:rotate(-0.3deg)}`,
+  `.panel.s{transform:rotate(0.25deg)}`; badges get a bit more (±1.2–1.4°).
 - Chips alternate: `.chip:nth-child(odd){transform:rotate(-1.1deg)}` / even `0.9deg`.
 - Irregular corner radii: `border-radius:10px 8px 11px 7px` — four different
   values, always.
-- Prefer dashed/dotted strokes over solid: lanes `1.5px dashed rgba(...,.45)`,
+- Prefer dashed/dotted strokes over solid: panels `1.5px dashed rgba(...,.45)`,
   axes `2px dotted rgba(...,.3)`.
 - Chalk progress fills are streaky, not solid:
   `repeating-linear-gradient(90deg, rgba(245,244,239,.85) 0 6px, rgba(245,244,239,.45) 6px 9px)`.
@@ -135,7 +135,7 @@ All rotations must be neutralized under reduced motion:
 ```css
 @media(prefers-reduced-motion:reduce){
   *{transition-duration:.01ms!important}
-  .chip,.chunk,.lane{transform:none!important}
+  .chip,.chunk,.panel{transform:none!important}
 }
 ```
 

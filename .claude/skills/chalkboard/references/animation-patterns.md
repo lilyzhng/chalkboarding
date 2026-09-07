@@ -71,7 +71,7 @@ a dotted `.trackbase`.
 generated in a loop at `sec/AXIS*100%`; playhead is a 0-width, 2px-left-border
 div whose `left` tracks `t`.
 
-**Status line**: dim one-liner per lane, rewritten by `paint` — narrates the
+**Status line**: dim one-liner per panel, rewritten by `paint` — narrates the
 current beat ("round 2: drafting + verifying…"). Give it `min-height` so the
 layout doesn't jump. **Done badge**: outlined pill, `opacity:0→1` at its beat,
 slight rotation.

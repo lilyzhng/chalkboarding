@@ -27,7 +27,7 @@ mistakes are 10x cheaper to fix in ASCII than in styled HTML.
 Turn the idea into an ASCII wireframe in the conversation, at roughly the real
 aspect ratio (figures are ~940px wide). Show:
 
-- every panel/lane/box with its border and label
+- every panel/box/row with its border and label
 - placeholder text where real labels go
 - the replay button position (bottom-right)
 - an **animation beat table** under the mock: what appears at which second
@@ -54,7 +54,7 @@ Beats: t=0 start · t=1.65 chunk 1 · t=3.3 chunk 2 + done badge
        t=10 vanilla done · t=11.5 freeze (loop end)
 ```
 
-Conventions: `:` dashed lane borders, `[x]` chips, `(...)` grouped chunks,
+Conventions: `:` dashed panel borders, `[x]` chips, `(...)` grouped chunks,
 `=` filled / `-` unfilled progress. Annotate anything that moves with `<-`.
 
 Iterate here until the user approves the layout and the story beats. The mock
@@ -62,8 +62,8 @@ is the contract: the number of panels, the reading order, and the beat table
 carry over 1:1 into phase 2.
 
 While mocking, push for **one idea per figure**. A chalkboard reads like a
-teacher's board, not a dashboard — if the mock needs more than ~2 lanes or
-~3 beats-per-lane to make its point, suggest splitting into two figures.
+teacher's board, not a dashboard — if the mock needs more than ~2 panels or
+~3 beats-per-panel to make its point, suggest splitting into two figures.
 
 ## Phase 2 — convert to chalkboard HTML
 

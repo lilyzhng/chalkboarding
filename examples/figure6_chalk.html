@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figure 6 — The full decoding race</title>
+<style>@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}</style>
+<style>
+:root{
+  --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
+  --chalk:#F5F4EF;
+  --chalk-dim:rgba(245,244,239,.55);
+  --chalk-faint:rgba(245,244,239,.32);
+  --board:#12291d;
+  --frame:#7A5230;
+}
+*{box-sizing:border-box}
+html{zoom:0.8}
+body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
+.wrap{max-width:940px;margin:0 auto}
+.board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
+.slate{
+  position:relative;font-family:'PencilPete',cursive;
+  border-radius:10px;padding:30px 34px 64px;color:var(--chalk);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 15%, rgba(255,255,255,0.03), transparent 60%),
+    var(--board);
+}
+.axis{display:flex;align-items:flex-end;gap:12px;margin:0 2px 18px}
+.axislbl{font-size:1.15rem;color:var(--chalk-dim);white-space:nowrap;padding-bottom:6px}
+.axistrack{position:relative;flex:1;height:30px;border-bottom:2px dotted rgba(245,244,239,.3)}
+.axistick{position:absolute;bottom:0;height:6px;border-left:1.5px solid rgba(245,244,239,.4)}
+.axisnum{position:absolute;top:0;transform:translateX(-50%);font-size:1.1rem;color:var(--chalk-dim)}
+.playhead{position:absolute;top:0;bottom:-4px;width:0;border-left:2px solid rgba(245,244,239,.7)}
+.lane{
+  border:1.5px dashed rgba(245,244,239,.4);border-radius:11px;
+  padding:11px 14px;margin-bottom:10px;
+}
+.lane:nth-child(odd){transform:rotate(-0.18deg)}
+.lane:nth-child(even){transform:rotate(0.15deg)}
+.lane.pending{border-style:dotted;border-color:rgba(245,244,239,.28)}
+.lanehead{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.lanename{font-size:1.3rem;font-weight:700;letter-spacing:.13em;color:var(--chalk);min-width:112px}
+.result{
+  margin-left:auto;font-size:1.12rem;color:var(--chalk-dim);
+  font-variant-numeric:tabular-nums;opacity:0;transition:opacity .35s;
+}
+.result.show{opacity:1}
+.tau{font-size:1.08rem;color:var(--chalk-faint);opacity:0;transition:opacity .35s}
+.tau.show{opacity:1}
+.chunks{display:flex;gap:7px;flex-wrap:wrap;min-height:36px;align-items:center}
+.chunk{
+  display:inline-flex;gap:5px;padding:4px 8px;border-radius:9px 7px 10px 6px;
+  border:1.7px solid rgba(245,244,239,.7);background:rgba(245,244,239,.05);
+  opacity:0;transition:opacity .3s;
+}
+.chunk.show{opacity:1}
+.chunk:nth-child(odd){transform:rotate(-.7deg)}
+.chunk:nth-child(even){transform:rotate(.6deg)}
+.chunk.pending{border-style:dashed;border-color:rgba(245,244,239,.45)}
+.w{font-size:1.15rem;font-weight:700;color:var(--chalk)}
+.chunk.pending .w{color:var(--chalk-dim)}
+.trackwrap{position:relative;height:8px;margin-top:9px}
+.trackbase{position:absolute;inset:3px 0;border-bottom:2px dotted rgba(245,244,239,.26)}
+.fill{
+  position:absolute;left:0;top:0;bottom:0;width:0;border-radius:4px;
+  background:repeating-linear-gradient(90deg,rgba(245,244,239,.8) 0 6px,rgba(245,244,239,.4) 6px 9px);
+}
+.lane.pending .fill{background:repeating-linear-gradient(90deg,rgba(245,244,239,.3) 0 4px,transparent 4px 9px)}
+.replay{
+  position:absolute;bottom:6px;right:28px;z-index:2;
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;padding:0;
+}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{
+  width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);
+}
+.replay:hover .eraser{filter:brightness(1.08)}
+.replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
+@media(max-width:640px){.slate{padding:20px 16px}.lanename{min-width:auto}}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+  .lane,.chunk{transform:none!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="slip1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+<div class="wrap">
+  <div class="board"><div class="slate">
+
+    <div class="axis">
+      <span class="axislbl">time &rarr;</span>
+      <div class="axistrack" id="axistrack"><div class="playhead" id="playhead"></div></div>
+    </div>
+
+    <div id="lanes"></div>
+
+    <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
+  </div></div>
+</div>
+
+<script>
+(function(){
+  var SENT = ['It','does','not','do','to','dwell','on','dreams','and','forget','to','live'];
+  var AXIS = 9.5, END = 9.9;
+
+  // group sizes per lane, and measured finish times
+  var LANES = [
+    { name:'VANILLA',  group:1, done:9.0, rate:'9.0s  \u00b7  230 tok/s',   tau:'' },
+    { name:'EAGLE-3',  group:3, done:5.4, rate:'5.4s  \u00b7  ~382 tok/s',  tau:'\u03c4 2.66' },
+    { name:'DFLASH',   group:3, done:4.7, rate:'4.7s  \u00b7  ~442 tok/s',  tau:'\u03c4 3.11' },
+    { name:'DSPARK',   group:4, done:3.0, rate:'3.0s  \u00b7  ~690 tok/s',  tau:'\u03c4 3.72' },
+    { name:'DFLASH 2', group:6, done:3.0, rate:'\u22483.0s  \u00b7  2.7\u20133.4x (reported)', tau:'' }
+  ];
+  var PENDING_PACE = 3.3;  // unmeasured lanes draw at DFlash-like pace, but claim no time
+
+  // ---- time ruler ----
+  var track = document.getElementById('axistrack');
+  for (var s = 0; s <= 9; s++){
+    var x = (s / AXIS * 100) + '%';
+    var num = document.createElement('span');
+    num.className = 'axisnum'; num.style.left = x; num.textContent = s + 's';
+    track.appendChild(num);
+    var tk = document.createElement('span');
+    tk.className = 'axistick'; tk.style.left = x;
+    track.appendChild(tk);
+  }
+  var playhead = document.getElementById('playhead');
+
+  // ---- lanes ----
+  var host = document.getElementById('lanes');
+  var built = LANES.map(function(cfg){
+    var lane = document.createElement('div');
+    lane.className = 'lane' + (cfg.done === null ? ' pending' : '');
+
+    var head = document.createElement('div');
+    head.className = 'lanehead';
+    head.innerHTML = '<span class="lanename">' + cfg.name + '</span>'
+      + '<span class="tau">' + cfg.tau + '</span>'
+      + '<span class="result">' + cfg.rate + '</span>';
+    lane.appendChild(head);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'chunks';
+    var chunks = [], i = 0, span = cfg.done === null ? PENDING_PACE : cfg.done;
+    var nGroups = Math.ceil(SENT.length / cfg.group);
+    while (i < SENT.length){
+      var g = document.createElement('span');
+      g.className = 'chunk' + (cfg.done === null ? ' pending' : '');
+      SENT.slice(i, i + cfg.group).forEach(function(w){
+        var e = document.createElement('span');
+        e.className = 'w'; e.textContent = w;
+        g.appendChild(e);
+      });
+      wrap.appendChild(g);
+      chunks.push({ el: g, t: span * (chunks.length + 1) / nGroups });
+      i += cfg.group;
+    }
+    lane.appendChild(wrap);
+
+    var tw = document.createElement('div');
+    tw.className = 'trackwrap';
+    tw.innerHTML = '<div class="trackbase"></div><div class="fill"></div>';
+    lane.appendChild(tw);
+
+    host.appendChild(lane);
+    return {
+      cfg: cfg,
+      chunks: chunks,
+      fill: tw.querySelector('.fill'),
+      result: head.querySelector('.result'),
+      tau: head.querySelector('.tau'),
+      span: span
+    };
+  });
+
+  function paint(t){
+    playhead.style.left = (Math.min(t, AXIS) / AXIS * 100) + '%';
+
+    built.forEach(function(L){
+      var cap = Math.min(t, L.span);
+      L.fill.style.width = (cap / AXIS * 100) + '%';
+      L.chunks.forEach(function(c){ c.el.classList.toggle('show', t >= c.t); });
+      var finished = t >= L.span;
+      L.result.classList.toggle('show', finished);
+      L.tau.classList.toggle('show', finished);
+    });
+  }
+
+  var t0 = performance.now(), raf = null;
+
+  function tick(){
+    var t = (performance.now() - t0) / 1000;
+    if (t >= END){ paint(END); raf = null; return; }   // play once, then hold
+    paint(t);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function play(){
+    if (raf) cancelAnimationFrame(raf);
+    t0 = performance.now();
+    paint(0);
+    raf = requestAnimationFrame(tick);
+  }
+
+  document.getElementById('replay').addEventListener('click', play);
+  play();
+
+  window.addEventListener('beforeprint', function(){
+    try { if (typeof raf !== 'undefined' && raf) cancelAnimationFrame(raf); } catch(e){}
+    try { paint(1e9); } catch(e){}
+  });
+  function postHeight(){
+    parent.postMessage({
+      chalkHeight: Math.ceil(document.body.getBoundingClientRect().height),
+      chalkSrc: location.pathname.split('/').pop()
+    }, '*');
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(postHeight);
+  setTimeout(postHeight, 1500);
+})();
+</script>
+<script>
+(function(){
+  // hand-drawn slips: long strokes are harder to draw straight, so the longer
+  // the element, the more likely (and eventually certain) a waver somewhere.
+  var els = document.querySelectorAll('.slate span, .slate button, .slate td, .slate th, .slate .tlabel, .slate .tline, .slate .panettl, .slate .outerttl, .slate .note, .slate .pic, .slate .share, .slate .name, .slate .verdict, .slate .setup, .slate .given, .slate .bar, .slate .seg, .slate .card, .slate .pill, .slate .pane, .slate .panel, .slate .trow, .slate .outer, .slate .chunk');
+  var slips = ['url(#slip1)', 'url(#slip2)', 'url(#slip3)'];
+  els.forEach(function(el, i){
+    var w = el.offsetWidth || 0;
+    var r = ((i * 61 + 17) % 100) / 100;
+    var pClean = w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0;
+    if (r < pClean) return;
+    el.style.filter = slips[i % 3];
+  });
+})();
+</script>
+</body>
+</html>

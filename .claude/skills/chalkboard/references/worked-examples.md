@@ -119,6 +119,53 @@ Beats: 0.5 left grid · 2.2 left result ✗ · 2.5 pictogram · 2.9 note
   shape is the quantitative punchline, annotated with a chalk
   "← tail sags" note that appears late, like a teacher circling back.
 
+## Dog and cat — `figure7_chalk.html`
+
+**Regeneration prompt:**
+
+> A chalkboard figure making strict vs relaxed verification *felt*. Setup
+> line: `"The best pet is a ___"`, where the target model says cat 50% /
+> dog 50%. Two chalk toggle buttons: "strict rejection sampling" keeps the
+> output at the target's 50/50; "relaxed rule" drifts it to 20/80. Show a
+> 🐈 and a 🐕 whose sizes ARE the distribution — under the relaxed rule the
+> dog visibly balloons. Verdict line: "the output keeps the target's 50/50"
+> vs "the best pet becomes a dog".
+
+**Phase-1 mock:**
+
+```
++--------------------------------------------------------------+
+|        "The best pet is a ___"                               |
+|                                                              |
+|   [strict rejection sampling]*   [ relaxed rule ]            |
+|                                                              |
+|        🐈  50%              🐕  50%                          |
+|        CAT                  DOG                              |
+|   (emoji font-size = share: relaxed -> small cat, HUGE dog)  |
+|                                                              |
+|        the output keeps the target's 50/50                   |
++--------------------------------------------------------------+
+
+No timeline: this is a TOGGLE figure. Beats table is just the two states:
+strict -> 50/50 · relax -> 20/80 + verdict swap.
+```
+
+**Implementation notes:**
+
+- This is the **mode-toggle** variant: no clock, no replay eraser — the two
+  chalk buttons are the whole control surface, and `render(mode)` plays the
+  role of `paint(t)` (same idempotency rule: each mode renders from
+  scratch).
+- The data-carrying trick: `fontSize = 40 + 130 * share` — the emoji IS the
+  bar chart. No axes, no bars, and the point lands harder because it's a
+  dog getting fat.
+- Numbers stay on screen (`50%`/`80%` under each pet) so the joke never
+  replaces the quantity — fun carries the data, it doesn't hide it.
+- Toggle buttons are chalk pills: current mode gets `.on` (brighter border
+  + fill); both slip-filtered like everything else.
+- The verdict line is the wink, written deadpan: "the best pet becomes a
+  dog". One wink per figure.
+
 ## The rest, in one line each
 
 - `rejection_sampling_chalk-v1.html` — mostly-static diagram; shows the style

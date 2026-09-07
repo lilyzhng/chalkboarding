@@ -65,6 +65,17 @@ While mocking, push for **one idea per figure**. A chalkboard reads like a
 teacher's board, not a dashboard — if the mock needs more than ~2 panels or
 ~3 beats-per-panel to make its point, suggest splitting into two figures.
 
+And push to **be fun**. The style works because it feels like a great teacher
+at a board, and great teachers reach for silly, concrete, everyday examples:
+rejection sampling is "The best pet is a ___" with a cat and a dog, parallel
+denoising is painting a kangaroo, path selection is racing to school. So at
+mock time, before drawing boxes, ask: *what's the everyday story here, and
+who's the character?* An emoji can be the character — and can carry data
+(a 🐕 that literally grows as its probability share grows beats a bar chart).
+Small winks are welcome (a venue in-joke, a deadpan verdict line like "the
+best pet becomes a dog") — one per figure; it's seasoning, not the meal.
+Abstract boxes-and-arrows is the fallback, not the default.
+
 ## Phase 2 — convert to chalkboard HTML
 
 Start from `assets/template.html` (a complete working skeleton) and read

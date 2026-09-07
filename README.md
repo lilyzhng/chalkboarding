@@ -49,6 +49,8 @@ in a browser; the font file must sit next to them):
   interactive slider
 - `dflash_kv_injection_chalk-v1.html` — DFlash KV injection: the multi-diagram
   figure (SVG-heavy, many labeled panels)
+- `figure7_chalk.html` — dog and cat: "The best pet is a ___", strict vs
+  relaxed verification as a toggle, emoji sized by probability share
 - `figure1_chalk.html` — twin timeline panels, chips + chunks, playhead
 
 ## Before open-sourcing

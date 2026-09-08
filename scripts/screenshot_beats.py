@@ -8,8 +8,12 @@ message on its own.
 Usage:
     python3 scripts/screenshot_beats.py examples/example5_decoding_race.html
     python3 scripts/screenshot_beats.py my_chalk.html --beats 0.3,3,12.5 --out shots/
+    python3 scripts/screenshot_beats.py my_chalk.html --beats 0.3,3.6,8.5 --replay
 
-Writes <name>_start.png, <name>_mid.png, <name>_end.png.
+Pick the beats from your beat table: start just after 0, mid right after the
+key beat, end past END. Writes <name>_start.png, <name>_mid.png, <name>_end.png,
+and with --replay clicks the eraser after the end shot and writes
+<name>_replay.png 0.4s later (it should look like the start shot).
 Requires: playwright (python) with Chromium.
 """
 import argparse
@@ -23,6 +27,7 @@ def main():
     ap.add_argument("html")
     ap.add_argument("--beats", default="0.3,3,12.5", help="seconds for start,mid,end (default 0.3,3,12.5)")
     ap.add_argument("--out", default=".", help="output directory")
+    ap.add_argument("--replay", action="store_true", help="after the end shot, click #replay and shoot the reset")
     args = ap.parse_args()
     beats = [float(x) for x in args.beats.split(",")]
     names = ["start", "mid", "end"][: len(beats)]
@@ -38,6 +43,12 @@ def main():
             page.wait_for_timeout(int((t - elapsed) * 1000))
             elapsed = t
             path = os.path.join(args.out, f"{base}_{name}.png")
+            page.screenshot(path=path, full_page=True)
+            print("wrote", path)
+        if args.replay:
+            page.click("#replay")
+            page.wait_for_timeout(400)
+            path = os.path.join(args.out, f"{base}_replay.png")
             page.screenshot(path=path, full_page=True)
             print("wrote", path)
         b.close()

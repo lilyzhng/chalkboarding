@@ -70,7 +70,7 @@ Clone directly into your skills directory:
 git clone https://github.com/lilyzhng/chalkboarding.git ~/.claude/skills/chalkboarding
 ```
 
-Then type `/chalkboarding` in Claude Code. To use it in one project only, clone it anywhere and point Claude Code at `SKILL.md`.
+Then type `/chalkboarding` in Claude Code (the skill's `name` in `SKILL.md` matches). To use it in one project only, clone it anywhere and point Claude Code at `SKILL.md`.
 
 ### Other Coding Agents
 
@@ -89,7 +89,7 @@ If the agent can read GitHub repos or browse files, it should start from `SKILL.
 - `fonts/`
 - `scripts/`
 
-Some agents can also install the skill for you if they have filesystem access and a known local skills directory. If not, they can follow `SKILL.md` directly for the current session.
+Some agents can also install the skill for you if they have filesystem access and a known local skills directory. If not, they can follow `SKILL.md` directly for the current session. Whatever the agent, the one file that must be copied is `fonts/PencilPete.ttf`: it goes next to every generated figure.
 
 ## Usage
 
@@ -146,7 +146,7 @@ python3 scripts/trace_bitmap.py kangaroo.png --size 32   # prints the X/. bitmap
 ## Requirements
 
 - A local coding agent with filesystem access and the ability to run shell commands
-- For QA screenshots and media export: Python with `playwright` (Chromium installed) and `ffmpeg` on PATH
+- For QA screenshots and media export: Python with `playwright` (`pip install playwright && playwright install chromium`) and `ffmpeg` on PATH. Sandboxed agents may need the sandbox off for the headless Chromium commands.
 - For tracing: Python with `Pillow`
 
 ## Credits

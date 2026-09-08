@@ -81,6 +81,12 @@ Divide and conquer, twice over: concept → composition → shape → fill. Use
 
 ## Go to school — `example4_go_to_school.html`
 
+(The shipped file titles its panels "INDEPENDENT TOP-1 (DFLASH)" and "PATH
+SELECTION (DFLASH 2)" because it sat in a paper about those models; the prompt
+below is the model-free version. It also predates the end-of-body slip script,
+so its pictograms are unfiltered; a regeneration from the template will look
+wobblier than the original, which is the intended look.)
+
 **Regeneration prompt:**
 
 > A chalkboard figure contrasting independent top-1 drafting with path
@@ -183,12 +189,18 @@ strict -> 50/50 · relax -> 20/80 + verdict swap.
 
 ## The rest, in one line each
 
-- `example3_rejection_sampling.html` — mostly-static diagram; shows the style
-  works without a timeline (no beats, no playhead).
+- `example3_rejection_sampling.html` — mostly-static diagram: nine timed
+  reveals over 7s, no playhead. Predates the slip filters and the `paint(t)`
+  model (it uses a `setTimeout` chain), so copy its layout ideas (token
+  columns, correction written above the chip, p/q bar pairs), not its code.
 - `example5_decoding_race.html` — the full decoding race: many moving chips, one shared
   time axis; the maximal version of the chips + progress pattern.
 - `example7_dflash_flat_cost.html` — slider-driven: `paint(sliderValue)`
-  instead of `paint(clockTime)`; SVG cost curves + a reading line.
+  instead of `paint(clockTime)`; SVG cost curves + a reading line. Sweeps
+  itself 1→16 on load (about 4s), then stays draggable; see the sliders recipe
+  in `animation-patterns.md` for the two-argument `paint(g, reveal)` that makes
+  sweep and drag coexist. Chart lines are sampled every 0.5 γ with a
+  deterministic ±1px wobble so they are not ruler-straight.
 - `example8_dflash_kv_injection.html` — the multi-diagram figure: several
   labeled SVG panels on one board; shows how far pure hand-drawn SVG
   (paths + text, slip-filtered) can carry an architecture explanation.

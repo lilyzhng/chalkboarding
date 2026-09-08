@@ -96,7 +96,7 @@ grows with element width until it's certain:
 (function(){
   // hand-drawn slips: long strokes are harder to draw straight, so the longer
   // the element, the more likely (and eventually certain) a waver somewhere.
-  var els = document.querySelectorAll('.slate span, .slate button, .slate td, .slate th /*, + every custom class you added */');
+  var els = document.querySelectorAll('.slate span, .slate button, .slate .status, .slate td, .slate th /*, + every custom class you added */');
   var slips = ['url(#slip1)', 'url(#slip2)', 'url(#slip3)'];
   els.forEach(function(el, i){
     var w = el.offsetWidth || 0;
@@ -112,6 +112,9 @@ grows with element width until it's certain:
 **When you invent a new class, add it to this selector list** — this is the
 most common way the effect silently goes missing. Deterministic randomness
 (`i*61+17 % 100`) keeps the figure identical across reloads/screenshots.
+Same rule for anything structural in a figure (which cells fill first, which
+chip wobbles): derive it from the index, never `Math.random()`. Real
+randomness is fine only for decorative flicker that is meant to look alive.
 
 For inline SVG strokes, apply a slip directly: `filter:url(#slip1)` on the
 path or group.

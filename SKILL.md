@@ -1,5 +1,5 @@
 ---
-name: chalkboard
+name: chalkboarding
 description: >
   Create animated chalkboard-style HTML figures — a green slate in a wooden frame,
   hand-drawn chalk lettering, wobbly strokes, and elements that animate onto the
@@ -27,7 +27,7 @@ shape* from *the drawing of it*; `paint(t)` separates *the story's beats*
 from *the rendering of any moment*. Whenever part of a figure feels too hard
 to produce directly, don't push harder — find the split.
 
-Two phases, in order. Do not skip phase 1 for anything non-trivial — layout
+Three phases, in order: mock, build, QA. Do not skip phase 1 for anything non-trivial — layout
 mistakes are 10x cheaper to fix in ASCII than in styled HTML.
 
 ## Phase 1 — ASCII mock
@@ -65,7 +65,10 @@ Beats: t=0 start · t=1.65 chunk 1 · t=3.3 chunk 2 + done badge
 Conventions: `:` dashed panel borders, `[x]` chips, `(...)` grouped chunks,
 `=` filled / `-` unfilled progress. Annotate anything that moves with `<-`.
 
-Iterate here until the user approves the layout and the story beats. The mock
+Iterate here until the user approves the layout and the story beats. If the
+user is not available (a batch run, an unattended agent), write the mock and
+beat table to `<topic>_mock.md` next to the output and proceed as if approved,
+so there is still a contract to check the figure against. The mock
 is the contract: the number of panels, the reading order, and the beat table
 carry over 1:1 into phase 2.
 
@@ -110,7 +113,8 @@ wired in the template:
    (`#slip1..3`) plus the standard end-of-body script that applies them
    probabilistically — the longer an element, the more likely it wavers,
    exactly like real handwriting. Add every new visual class to that
-   script's selector list. Complement with small alternating rotations
+   script's selector list (SVG `<text>` is not covered by it: put
+   `filter:url(#slip1)` on the SVG element directly). Complement with small alternating rotations
    (±0.25°–1.4°) and irregular border-radii like `10px 8px 11px 7px`.
 4. **Animation model**: one idempotent `paint(t)` function, beat times as
    named constants at the top of the script, a single rAF loop, and the
@@ -150,8 +154,14 @@ versions stay comparable).
 
 ## Phase 3 — QA before delivering
 
-Screenshot the figure with Playwright (Chromium is preinstalled) at t=0, one
-mid-animation beat, and after the loop ends, and actually look at the images:
+Screenshot the figure with `python3 scripts/screenshot_beats.py <file> --beats
+<start>,<mid>,<end>` and actually look at the images. Pick the three beats from
+your own beat table: start just after t=0, mid right after the key beat, end
+past your `END` constant (the defaults `0.3,3,12.5` fit a 10-12s figure, not
+yours). Add `--replay` to also click the eraser and shoot the reset. Needs
+Python `playwright` with Chromium (`pip install playwright && playwright
+install chromium`); in a sandboxed agent, headless Chromium may need the
+sandbox off for that one command. Check:
 
 - nothing overflows the slate; chips wrap instead of clipping
 - the final frame is self-sufficient — a reader who only ever sees the frozen
@@ -159,7 +169,7 @@ mid-animation beat, and after the loop ends, and actually look at the images:
   every label and the "done" state
 - text contrast: primary chalk on board, secondary at .55 alpha, nothing dimmer
 - the chalky waver is visible on long strokes but labels stay legible
-- replay actually resets everything (click it in the Playwright session)
+- replay actually resets everything (the `--replay` shot must match the start shot)
 
-A quick screenshot harness is described at the end of
-`animation-patterns.md`.
+Sharing it afterwards: `python3 scripts/export_media.py <file>` renders a
+crisp MP4 cropped to the board.

@@ -94,9 +94,22 @@ delay + smoothstep blend from noise alpha to a fixed per-cell texture alpha
 (`0.72 + ((i*37+11)%23)/100` — deterministic, looks hand-filled). Keep grids
 ≤ 32×32: this is a chalk sketch, not a framebuffer.
 
+**Declarative beats**: when a figure is many small reveals rather than a few
+big ones, skip per-element constants. Give each element `class="el"
+data-t="2.2"` and make `paint(t)` toggle `.show` on every `.el` whose
+`data-t <= t`. The beat table then lives in the markup.
+
 **Interactive sliders**: for explorable figures, a labeled `<input type=range>`
 can replace the timeline — `paint` becomes a function of slider value instead
-of clock time. Same idempotency rule.
+of clock time. Same idempotency rule. If the figure should also sweep itself on
+load and then stay draggable, use two arguments: `paint(g, reveal)` where `g`
+is the chosen value (dots, reader line, verdict) and `reveal` is how much of
+the chart is drawn. The sweep calls `paint(g, g)`; a drag after the sweep calls
+`paint(g, MAX)` so dragging never erases the chart, and the first `input` event
+cancels the sweep's rAF. For print and reduced motion call `paint(MAX, MAX)`,
+not `paint(1e9)`. Style the native range with `::-webkit-slider-thumb` and
+`::-moz-range-thumb` (chalk ring, dotted track); it is the one native control
+on the board and looks wrong untouched.
 
 ## QA screenshot harness
 

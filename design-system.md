@@ -1,7 +1,7 @@
 # Chalkboard design system
 
 The exact visual language distilled from the NeurIPS 2026 figure set. Copy
-these values verbatim — the style's coherence comes from every figure sharing
+these values verbatim, the style's coherence comes from every figure sharing
 them.
 
 ## Tokens
@@ -43,7 +43,7 @@ body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
 }
 ```
 
-The three faint radial gradients are the "chalk dust in raking light" effect —
+The three faint radial gradients are the "chalk dust in raking light" effect,
 without them the slate looks like flat vector green and the illusion dies.
 
 Leave extra bottom padding (~52px) on the slate for the replay button; on
@@ -51,7 +51,7 @@ narrow layouts bump it (`@media(max-width:640px)`) so content never collides
 with the eraser.
 
 Anything outside the board (an `h2` title, a caption) uses `--_serif` and
-`--_ink`, normal typography — the contrast between crisp serif surroundings
+`--_ink`, normal typography, the contrast between crisp serif surroundings
 and chalky board is part of the look.
 
 ## The chalky font
@@ -60,7 +60,7 @@ and chalky board is part of the look.
 <style>@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}</style>
 ```
 
-- `PencilPete.ttf` sits **next to the output HTML** (relative URL — keeps the
+- `PencilPete.ttf` sits **next to the output HTML** (relative URL: keeps the
   figure portable and iframe-friendly). Copy it from this repo's `fonts/`.
 - Everything inside `.slate` inherits `'PencilPete',cursive`.
 - The font runs small: body-ish text is `1.15–1.35rem`, panel titles `1.3–1.5rem`
@@ -109,7 +109,7 @@ grows with element width until it's certain:
 </script>
 ```
 
-**When you invent a new class, add it to this selector list** — this is the
+**When you invent a new class, add it to this selector list**, this is the
 most common way the effect silently goes missing. Deterministic randomness
 (`i*61+17 % 100`) keeps the figure identical across reloads/screenshots.
 Same rule for anything structural in a figure (which cells fill first, which
@@ -124,7 +124,7 @@ path or group.
 - Alternating micro-rotations on containers: `.panel.v{transform:rotate(-0.3deg)}`,
   `.panel.s{transform:rotate(0.25deg)}`; badges get a bit more (±1.2–1.4°).
 - Chips alternate: `.chip:nth-child(odd){transform:rotate(-1.1deg)}` / even `0.9deg`.
-- Irregular corner radii: `border-radius:10px 8px 11px 7px` — four different
+- Irregular corner radii: `border-radius:10px 8px 11px 7px`, four different
   values, always.
 - Prefer dashed/dotted strokes over solid: panels `1.5px dashed rgba(...,.45)`,
   axes `2px dotted rgba(...,.3)`.
@@ -142,7 +142,7 @@ All rotations must be neutralized under reduced motion:
 
 ## The replay eraser
 
-Standard control, bottom-right of the slate — a chalk-drawn replay arrow next
+Standard control, bottom-right of the slate, a chalk-drawn replay arrow next
 to a skeuomorphic blackboard eraser:
 
 ```html
@@ -184,4 +184,4 @@ setTimeout(postHeight, 1500);
 ```
 
 Plus `background:transparent` on body and `html{zoom:0.8}` (figures are
-authored oversize and zoomed down — text stays crisp, chalk texture tightens).
+authored oversize and zoomed down, text stays crisp, chalk texture tightens).

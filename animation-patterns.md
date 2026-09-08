@@ -47,7 +47,7 @@ ever find yourself appending DOM inside `tick()`, build the DOM once up
 front (hidden) and reveal it in `paint`.
 
 Elements animate in with `opacity:0` + `transition:opacity .3s` and a `.show`
-class — the transition gives each appearance a chalk-stroke softness without
+class, the transition gives each appearance a chalk-stroke softness without
 per-frame work.
 
 Pacing: total loop 8–12s. End frozen on the final frame (auto-loop is
@@ -61,7 +61,7 @@ alternating rotation, border `.75` alpha, fill `.05` alpha.
 
 **Grouped chunk reveal** (batches, rounds): wrap chips in a `.chunk` with a
 transparent dashed border; on its beat, set border-color visible and show all
-child chips at once — reads as "circled a group on the board".
+child chips at once, reads as "circled a group on the board".
 
 **Progress fill**: absolutely-positioned `.fill` with the streaky
 repeating-linear-gradient, `paint` sets `width` as a % of the axis. Under it,
@@ -71,7 +71,7 @@ a dotted `.trackbase`.
 generated in a loop at `sec/AXIS*100%`; playhead is a 0-width, 2px-left-border
 div whose `left` tracks `t`.
 
-**Status line**: dim one-liner per panel, rewritten by `paint` — narrates the
+**Status line**: dim one-liner per panel, rewritten by `paint`, narrates the
 current beat ("round 2: drafting + verifying…"). Give it `min-height` so the
 layout doesn't jump. **Done badge**: outlined pill, `opacity:0→1` at its beat,
 slight rotation.
@@ -91,7 +91,7 @@ Slip-filter the curve itself.
 **Pixel-grid canvases** (denoising, raster fills): CSS grid of `<i>` cells,
 32 columns. Serial fill = index cutoff; parallel converge = per-cell random
 delay + smoothstep blend from noise alpha to a fixed per-cell texture alpha
-(`0.72 + ((i*37+11)%23)/100` — deterministic, looks hand-filled). Keep grids
+(`0.72 + ((i*37+11)%23)/100`, deterministic, looks hand-filled). Keep grids
 ≤ 32×32: this is a chalk sketch, not a framebuffer.
 
 **Declarative beats**: when a figure is many small reveals rather than a few
@@ -100,7 +100,7 @@ data-t="2.2"` and make `paint(t)` toggle `.show` on every `.el` whose
 `data-t <= t`. The beat table then lives in the markup.
 
 **Interactive sliders**: for explorable figures, a labeled `<input type=range>`
-can replace the timeline — `paint` becomes a function of slider value instead
+can replace the timeline, `paint` becomes a function of slider value instead
 of clock time. Same idempotency rule. If the figure should also sweep itself on
 load and then stay draggable, use two arguments: `paint(g, reveal)` where `g`
 is the chosen value (dots, reader line, verdict) and `reveal` is how much of

@@ -14,7 +14,10 @@
   --chalk-dim:rgba(245,244,239,.55);
   --board:#12291d;
   --frame:#7A5230;
+  --tilt:1;   /* chalkiness multiplier for rotations, set by data-chalk */
 }
+.slate[data-chalk="tidy"]{--tilt:.3}
+.slate[data-chalk="rough"]{--tilt:1.7}
 *{box-sizing:border-box}
 html{zoom:0.8}
 body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
@@ -46,13 +49,13 @@ body.standalone .wrap{width:100%}
   padding:16px 18px;margin-bottom:18px;
 }
 .panel:last-child{margin-bottom:0}
-.panel.a{transform:rotate(-0.3deg)}
+.panel.a{transform:rotate(calc(-0.3deg * var(--tilt)))}
 .panelhead{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
 .panelname{color:var(--chalk);font-size:1.5rem;font-weight:700;letter-spacing:.18em}
 .donebadge{
   color:var(--chalk);font-size:1.15rem;margin-left:auto;
   border:1.5px solid currentColor;border-radius:50px;
-  padding:2px 11px;opacity:0;transition:opacity .3s;transform:rotate(1.2deg);
+  padding:2px 11px;opacity:0;transition:opacity .3s;transform:rotate(calc(1.2deg * var(--tilt)));
 }
 .chips{display:flex;gap:8px;flex-wrap:wrap;min-height:42px}
 .chip{
@@ -62,8 +65,8 @@ body.standalone .wrap{width:100%}
   color:var(--chalk);background:rgba(245,244,239,.05);
   opacity:0;transition:opacity .3s;
 }
-.chip:nth-child(odd){transform:rotate(-1.1deg)}
-.chip:nth-child(even){transform:rotate(0.9deg)}
+.chip:nth-child(odd){transform:rotate(calc(-1.1deg * var(--tilt)))}
+.chip:nth-child(even){transform:rotate(calc(0.9deg * var(--tilt)))}
 .chip.show{opacity:1}
 .trackwrap{position:relative;height:9px;margin-top:12px}
 .trackbase{position:absolute;inset:3px 0;border-bottom:2px dotted rgba(245,244,239,.28)}
@@ -87,7 +90,7 @@ body.standalone .wrap{width:100%}
   <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
 </svg>
 <div class="wrap">
-  <div class="board"><div class="slate">
+  <div class="board"><div class="slate" data-chalk="normal">
     <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
 
     <div class="panel a">
@@ -165,13 +168,23 @@ body.standalone .wrap{width:100%}
 (function(){
   // hand-drawn slips: long strokes are harder to draw straight, so the longer
   // the element, the more likely (and eventually certain) a waver somewhere.
+  // chalkiness preset from <div class="slate" data-chalk="tidy|normal|rough">
+  var CHALK = {
+    tidy:   { scale: 0.5, pClean: function(w){ return w < 280 ? 1 : 0.5; } },
+    normal: { scale: 1,   pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
+    rough:  { scale: 1.7, pClean: function(w){ return w < 60 ? 0.4 : 0; } }
+  };
+  var slate = document.querySelector('.slate');
+  var preset = CHALK[(slate && slate.getAttribute('data-chalk')) || 'normal'] || CHALK.normal;
+  document.querySelectorAll('feDisplacementMap').forEach(function(m){
+    m.setAttribute('scale', (parseFloat(m.getAttribute('scale')) * preset.scale).toFixed(2));
+  });
   var els = document.querySelectorAll('.slate span, .slate button, .slate .status, .slate td, .slate th');
   var slips = ['url(#slip1)', 'url(#slip2)', 'url(#slip3)'];
   els.forEach(function(el, i){
     var w = el.offsetWidth || 0;
     var r = ((i * 61 + 17) % 100) / 100;
-    var pClean = w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0;
-    if (r < pClean) return;
+    if (r < preset.pClean(w)) return;
     el.style.filter = slips[i % 3];
   });
 })();

@@ -42,6 +42,7 @@ All wired into `template.html`. Full spec in `design-system.md`.
 | Chalk ink | `#F5F4EF`, secondary `rgba(245,244,239,.55)`, nothing dimmer |
 | Font | `PencilPete.ttf` for everything on the slate, relative `url("PencilPete.ttf")`, copied next to the output |
 | Hand-drawn waver | SVG turbulence filters `#slip1..3` applied probabilistically by the end-of-body script; longer element = more likely to waver |
+| Chalkiness | `data-chalk="tidy\|normal\|rough"` on `.slate`, from question 4. Scales the filters, the waver probability, and `--tilt` in one place. Never hand-tune the filters per figure |
 | Micro-imperfection | alternating rotations ±0.25° to 1.4°, irregular radii like `10px 8px 11px 7px` |
 | Animation | one `paint(t)`, beat constants at the top, single rAF loop, eraser replay button, freeze on final frame |
 | Fixed heights | status, tally, badge lines use `height` + `line-height` + `nowrap`, never `min-height`; board height never changes mid-play |
@@ -83,13 +84,14 @@ One wink per figure (a venue in-joke, a deadpan verdict line). Seasoning, not th
 
 ## Phase 0: Intake Questionnaire
 
-Run ONE questionnaire with all three questions in a single call. Use the native structured UI (AskUserQuestion in Claude Code); otherwise one message with lettered options. Pre-fill the recommended option from anything the user gave and mark it "(Recommended)". Do not propose a mock or graphics before the answers are in.
+Run ONE questionnaire with all four questions in a single call. Use the native structured UI (AskUserQuestion in Claude Code); otherwise one message with lettered options. Pre-fill the recommended option from anything the user gave and mark it "(Recommended)". Do not propose a mock or graphics before the answers are in.
 
 | # | Header | Question | Options |
 | --- | --- | --- | --- |
 | 1 | Idea | What is the one thing this figure says? | 2-3 one-line read-backs of their text, each a different emphasis (mechanism / payoff / contrast) |
 | 2 | Layout | What does it look like? | A. Line chart: a crossing or gap is the point. B. Two-panel contrast: same input, two methods. C. Step-by-step walkthrough: one beat at a time. D. Architecture diagram: components and flows |
 | 3 | Motion | How does it move? | Plays itself once (default) / buttons the reader toggles / slider the reader drags |
+| 4 | Chalk | How chalky? | Tidy: a careful teacher, faint waver, barely any tilt / Normal (default): what the examples use / Rough: end of a long lecture, strong waver, visible tilt |
 
 Write each layout option in terms of THEIR figure, not generic text. "Other" is where they describe it in their own words.
 

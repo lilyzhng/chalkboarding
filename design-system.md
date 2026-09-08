@@ -140,6 +140,25 @@ All rotations must be neutralized under reduced motion:
 }
 ```
 
+### 4. Chalkiness presets
+
+One attribute on the slate sets all three imperfection systems at once:
+
+```html
+<div class="slate" data-chalk="normal">   <!-- tidy | normal | rough -->
+```
+
+| Preset | Filter scale | Waver probability | `--tilt` | Reads as |
+| --- | --- | --- | --- | --- |
+| tidy | 0.5x | only elements over 280px, half of them | 0.3 | a careful teacher, fresh chalk |
+| normal | 1x | the length-weighted curve above | 1 | every example in this repo |
+| rough | 1.7x | everything over 60px | 1.7 | end of a long lecture |
+
+Every `rotate()` in the CSS multiplies by `var(--tilt)`, so new classes should too:
+`transform:rotate(calc(-0.8deg * var(--tilt)))`. The slip script reads the attribute
+and rescales the `feDisplacementMap` values at load. Set the preset from the
+questionnaire; never hand-edit filter numbers per figure.
+
 ## The replay eraser
 
 Standard control, bottom-right of the slate, a chalk-drawn replay arrow next

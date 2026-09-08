@@ -10,32 +10,29 @@ The workflow is one idea applied repeatedly: **divide and conquer**. Never conce
 
 ## Examples
 
-Four figures from the NeurIPS set. Click any of them to play the MP4; every one is a single HTML file, and the videos were rendered with `scripts/export_media.py`.
-
-<!-- For inline playback on GitHub, drag the MP4 into this README in the web editor;
-     it becomes a user-attachments URL that renders as a player. -->
+Four figures from the NeurIPS set. Every one is a single HTML file; the videos were rendered with `scripts/export_media.py` and the source MP4s are in `examples/media/`.
 
 ### The kangaroo: paint pixel by pixel vs denoise all at once
 
-[![kangaroo](examples/media/example1_kangaroo.png)](examples/media/example1_kangaroo.mp4)
+https://github.com/user-attachments/assets/d4eff0ee-45d7-4bdc-b8d8-57984cc0f88f
 
 Two 32x32 canvases paint the same kangaroo. The left one fills cell by cell and takes seven seconds. The right one starts as noise and converges every pixel at once in three. When it finishes, the hook lands: what about drafting tokens in parallel? The kangaroo was traced from an emoji with `scripts/trace_bitmap.py`, not drawn freehand.
 
 ### Rejection sampling: "NeurIPS 2026 is in ___"
 
-[![rejection sampling](examples/media/example3_rejection_sampling.png)](examples/media/example3_rejection_sampling.mp4)
+https://github.com/user-attachments/assets/b71646c8-2cb6-4e42-96da-a616fe2a583a
 
 The draft proposes San Diego, the target prefers Sydney. Each token shows p and q as chalk bars and the accept probability underneath. Rejected tokens get struck through and corrected. The legend explains the three symbols in one line each.
 
 ### Drafting cost vs block size
 
-[![flat cost](examples/media/example7_dflash_flat_cost.png)](examples/media/example7_dflash_flat_cost.mp4)
+https://github.com/user-attachments/assets/7f75ebc7-65be-41d9-b850-fd208a1d1d23
 
 A chalk chart that draws itself as the block size slider sweeps from 1 to 16. EAGLE-3's cost climbs one layer-pass per token; DFlash stays flat at five. The break-even point is circled where the lines cross, and the verdict line under the chart updates with the slider.
 
 ### Go to school: independent top-1 vs path selection
 
-[![go to school](examples/media/example4_go_to_school.png)](examples/media/example4_go_to_school.mp4)
+https://github.com/user-attachments/assets/a6be0baa-2bb7-4260-9b30-df08cc7472aa
 
 Same verified prefix, "The fastest way to ___ ___ ___ ___", drafted two ways. On the left each position picks its own top token alone and the neighbors collide into "get to to school". On the right adjacent positions are scored together and one coherent path wins: "get to school quickly". A stick figure, a fence, and a schoolhouse are drawn on as SVG strokes, and the acceptance curve under each panel shows why the tail sags on one side and lifts on the other.
 

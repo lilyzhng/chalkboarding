@@ -10,7 +10,7 @@ The workflow is one idea applied repeatedly: **divide and conquer**. Never conce
 
 ## Examples
 
-Three figures from the NeurIPS set. Click any of them to play the MP4; every one is a single HTML file, and the videos were rendered with `scripts/export_media.py`.
+Four figures from the NeurIPS set. Click any of them to play the MP4; every one is a single HTML file, and the videos were rendered with `scripts/export_media.py`.
 
 <!-- For inline playback on GitHub, drag the MP4 into this README in the web editor;
      it becomes a user-attachments URL that renders as a player. -->
@@ -32,6 +32,12 @@ The draft proposes San Diego, the target prefers Sydney. Each token shows p and 
 [![flat cost](examples/media/example7_dflash_flat_cost.png)](examples/media/example7_dflash_flat_cost.mp4)
 
 A chalk chart that draws itself as the block size slider sweeps from 1 to 16. EAGLE-3's cost climbs one layer-pass per token; DFlash stays flat at five. The break-even point is circled where the lines cross, and the verdict line under the chart updates with the slider.
+
+### Go to school: independent top-1 vs path selection
+
+[![go to school](examples/media/example4_go_to_school.png)](examples/media/example4_go_to_school.mp4)
+
+Same verified prefix, "The fastest way to ___ ___ ___ ___", drafted two ways. On the left each position picks its own top token alone and the neighbors collide into "get to to school". On the right adjacent positions are scored together and one coherent path wins: "get to school quickly". A stick figure, a fence, and a schoolhouse are drawn on as SVG strokes, and the acceptance curve under each panel shows why the tail sags on one side and lifts on the other.
 
 All eight figures live in `examples/`, with an MP4 of each in `examples/media/`. Open any of them directly in a browser; they load the font from `../fonts/`.
 

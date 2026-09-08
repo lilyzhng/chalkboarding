@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# chalkboarding — record a chalkboard figure to MP4.
+#
+#   chalkboarding my_chalk.html                    # 12s, 1200px, MP4 next to the file
+#   chalkboarding my_chalk.html --seconds 10
+#   chalkboarding my_chalk.html --seconds 10 --width 1600 --gif --out media/
+#   chalkboarding toggle_chalk.html --click "#mRelax@4"
+#
+# Everything after the HTML path is passed to scripts/export_media.py.
+# Requires python3 with playwright (+ chromium) and ffmpeg on PATH.
+set -euo pipefail
+HERE="$(cd "$(dirname "$(readlink "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+  exit 0
+fi
+exec python3 "$HERE/scripts/export_media.py" "$@"

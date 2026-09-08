@@ -18,7 +18,7 @@ like a lecture. Embeds via iframe, prints as the final frame, exports to MP4.
 1. **Divide and conquer.** Never conceive and render in the same step. Every hard visual goal splits into a structure step and a manifestation step. When something feels too hard to produce directly, find the split.
 2. **Ask before drawing.** One native questionnaire before any mock, a second one to approve the mock. Even when the user handed you a description.
 3. **One idea per figure.** A teacher's board, not a dashboard. More than ~2 panels or ~3 beats per panel means two figures.
-4. **Be fun.** Great teachers reach for silly, concrete, everyday examples. An emoji can be the character and carry the data. Abstract boxes-and-arrows is the fallback, not the default.
+4. **Be fun, and hand-drawn.** Great teachers reach for silly, concrete, everyday examples, and draw them in chalk. Stick figures and chalk pictograms, not emoji. Abstract boxes-and-arrows is the fallback, not the default.
 5. **The board shows, the caption tells.** No verdicts, morals, sources, or explanatory prose on the slate. Deliver a one-line caption separately.
 6. **Idempotent `paint(t)`.** One function renders any moment from scratch. Replay, reduced motion, and print all fall out for free.
 7. **Trace, don't freehand.** You have weak spatial intuition. Get shapes from references, then render them in chalk.
@@ -54,6 +54,21 @@ Gotchas:
 - SVG `<text>` is not covered by the script. Put `filter:url(#slip1)` on the SVG element directly.
 - Never accumulate state inside the rAF tick. Build DOM once, reveal in `paint`.
 
+## Anti-Slop Rules
+
+The style works because it looks like a human drew it. Anything mass-produced breaks that.
+
+| Rule | Do | Don't |
+| --- | --- | --- |
+| Emoji budget | at most 1-2 per figure, each a named character that carries data (the 🐕 that grows with its share) | rows or grids of repeated emoji, emoji as bullets, emoji as decoration |
+| People and objects | chalk stick figures and pictograms as inline SVG, round-capped strokes, 5-10 paths each (see the walker and runner in `examples/example4_go_to_school.html`) | 🧑‍🎓 x 40, 👤 icons, clip art, photos |
+| Crowds and quantities | draw the scale: a row of chalk desks, tally marks, a bar that shrinks, a pie cut thinner | repeating a glyph N times |
+| Mock vs manifest | emoji are fine as placeholders in the ASCII mock | carrying mock emoji into the HTML |
+| Labels | short, concrete, sometimes lowercase, like a teacher's shorthand | title-case headings, marketing lines, exclamation marks |
+| Symmetry | slight rotations, uneven radii, a line that wavers | pixel-perfect alignment, identical repeated elements |
+
+If a mock uses an emoji, decide at manifest time: is this the one character (keep it) or a crowd (draw it in chalk)?
+
 ## Board Content Rules
 
 | On the slate | Off the slate (caption) |
@@ -84,7 +99,7 @@ If a figure in `examples/` shares the shape they chose, you may open it in Phase
 
 Layout mistakes are 10x cheaper to fix in ASCII than in styled HTML. Never skip this for anything non-trivial.
 
-Before drawing boxes, ask: what's the everyday story here, and who's the character? Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. Path selection is racing to school.
+Before drawing boxes, ask: what's the everyday story here, and who's the character? Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. Path selection is racing to school. Emoji are allowed here as placeholders; in Phase 2 they become chalk drawings (see Anti-Slop Rules).
 
 The mock shows, at roughly the real aspect ratio (~940px wide):
 
@@ -169,6 +184,7 @@ Look at every image and check:
 - [ ] contrast: primary chalk, secondary at .55 alpha, nothing dimmer
 - [ ] waver visible on long strokes, labels still legible
 - [ ] the `--replay` shot matches the start shot
+- [ ] emoji count is 0-2 and none repeat; every crowd is drawn in chalk
 
 Deliver the file plus the one-line caption.
 

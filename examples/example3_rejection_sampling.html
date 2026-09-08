@@ -18,6 +18,9 @@
 html{zoom:0.8}
 body{margin:0;padding:0;background:transparent;font-family:Georgia,serif}
 .wrap{max-width:940px;margin:0 auto}
+/* opened directly (not in an iframe): center the board in the window */
+body.standalone{min-height:calc(100vh / 0.8);display:flex;align-items:center;justify-content:center;padding:24px 12px}
+body.standalone .wrap{width:100%}
 .board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
 .slate{
   position:relative;font-family:'PencilPete',cursive;
@@ -93,6 +96,7 @@ body{margin:0;padding:0;background:transparent;font-family:Georgia,serif}
 </style>
 </head>
 <body>
+<script>if(window.self===window.top)document.documentElement.classList.add("standalone"),document.body.classList.add("standalone");</script>
 <div class="wrap">
   <div class="board"><div class="slate">
     <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>

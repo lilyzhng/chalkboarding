@@ -8,8 +8,6 @@ Built for the NeurIPS 2026 education tutorial [*Speculative Decoding: How It Evo
 
 ## Examples
 
-Four figures from the [tutorial](https://neurips2026-speculative-decoding.vercel.app/). Every one is a single HTML file; the videos were rendered with `scripts/export_media.py` and the source MP4s are in `examples/media/`.
-
 ### Figure 1. Kangaroo: painting an image sequentially vs in parallel
 
 https://github.com/user-attachments/assets/d4eff0ee-45d7-4bdc-b8d8-57984cc0f88f

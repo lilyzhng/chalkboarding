@@ -1,6 +1,6 @@
 # Chalkboarding
 
-A coding-agent skill for animated chalkboard figures: a green slate in a wooden frame, hand-drawn chalk lettering with a deliberately wobbly stroke, and elements that animate onto the board like a lecture unfolding. Built for the NeurIPS 2026 education paper *Speculative Decoding: How It Evolved, When It Stays Lossless, and What's Next*. The core `SKILL.md` can be read by any coding agent with filesystem and shell access.
+A coding-agent skill for animated chalkboard figures: a green slate in a wooden frame, hand-drawn chalk lettering with a deliberately wobbly stroke, and elements that animate onto the board like a lecture unfolding. Built for the NeurIPS 2026 education tutorial [*Speculative Decoding: How It Evolved, When It Stays Lossless, and What's Next*](https://neurips2026-speculative-decoding.vercel.app/). The core `SKILL.md` can be read by any coding agent with filesystem and shell access.
 
 ## What This Does
 
@@ -10,7 +10,7 @@ The workflow is one idea applied repeatedly: **divide and conquer**. Never conce
 
 ## Examples
 
-Four figures from the NeurIPS set. Every one is a single HTML file; the videos were rendered with `scripts/export_media.py` and the source MP4s are in `examples/media/`.
+Four figures from the [tutorial](https://neurips2026-speculative-decoding.vercel.app/). Every one is a single HTML file; the videos were rendered with `scripts/export_media.py` and the source MP4s are in `examples/media/`.
 
 ### The kangaroo: paint pixel by pixel vs denoise all at once
 

@@ -93,15 +93,9 @@ The skill will:
 ### Export a Demo Video or GIF
 
 ```bash
-./chalkboarding my_chalk.html                          # 1200px MP4, cropped to the board
-./chalkboarding my_chalk.html --seconds 10             # match the figure's own length
-./chalkboarding toggle_chalk.html --click "#mRelax@4"  # click a control mid-clip
-```
-
-`chalkboarding` is a one-line wrapper around `scripts/export_media.py`. Put it on your PATH to use it from anywhere:
-
-```bash
-ln -s "$PWD/chalkboarding" ~/.local/bin/chalkboarding
+python3 scripts/export_media.py my_chalk.html                          # 1200px MP4, cropped to the board
+python3 scripts/export_media.py my_chalk.html --seconds 10             # match the figure's own length
+python3 scripts/export_media.py toggle_chalk.html --click "#mRelax@4"  # click a control mid-clip
 ```
 
 The exporter drives the page with a paused virtual clock and screenshots every frame at 2x, so the chalk stays sharp and the timing is exact. Add `--gif` if you need a GIF; it is bigger and softer.
@@ -127,7 +121,7 @@ python3 scripts/trace_bitmap.py kangaroo.png --size 32   # prints the X/. bitmap
 | `fonts/` | The chalk face and the three-layer discontinuity system | Phase 2 (build) |
 | `scripts/trace_bitmap.py` | Image to pixel-grid bitmap | Phase 2, for complex imagery |
 | `scripts/screenshot_beats.py` | Start / mid / end QA screenshots | Phase 3 (QA) |
-| `chalkboarding`, `scripts/export_media.py` | Crisp MP4 export, cropped to the board | Sharing |
+| `scripts/export_media.py` | Crisp MP4 export, cropped to the board | Sharing |
 
 ## Requirements
 

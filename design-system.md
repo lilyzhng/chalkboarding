@@ -145,16 +145,16 @@ All rotations must be neutralized under reduced motion:
 One attribute on the slate sets all three imperfection systems at once:
 
 ```html
-<div class="slate" data-chalk="normal">   <!-- tidy | normal | rough -->
+<div class="slate" data-chalk="tidy">   <!-- tidy | rough | shaky -->
 ```
 
-| Preset | Slip scale | Waver probability | `--tilt` | Grain (gaps in strokes) | Fade (long strokes thin out) | Reads as |
-| --- | --- | --- | --- | --- | --- | --- |
-| tidy | 0.5x | only elements over 280px, half of them | 0.3 | none | none | a careful teacher, fresh chalk |
-| normal | 1x | the length-weighted curve above | 1 | light dust, no visible gaps | none | every example in this repo |
-| rough | 2.6x | everything over 60px | 2.2 | visible gaps, chalk skipping on slate | SVG paths over 120px fade to 22% at the end | end of a long lecture |
+| Preset | Slip scale | Waver probability | `--tilt` | Grain | Dash breaks | Width jitter | Fade | Reads as |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tidy (default) | 1x | length-weighted curve above | 1 | light dust | none | none | none | a careful teacher |
+| rough | 2.6x | everything over 60px | 2.2 | visible gaps | 30% of paths | ±25% | paths over 120px fade to 22% | end of a long day |
+| shaky | 4.6x | everything | 3.6 | heavy gaps | 80% of paths | ±60% | paths over 50px fade | a kid, or a first-day teacher |
 
-Five imperfection systems, one attribute. Grain is `#grain`, a noise-masked alpha
+Seven imperfection systems, one attribute. Grain is `#grain`, a noise-masked alpha
 filter applied to every SVG stroke on the slate (`filterUnits="userSpaceOnUse"`,
 because a perfectly straight line has a zero-width bounding box and would
 otherwise vanish). Fade is `#fade`, a horizontal gradient stroke applied to
@@ -162,7 +162,7 @@ paths whose `getTotalLength()` exceeds the preset's threshold.
 
 Grain noise is `baseFrequency="0.32"`. Anything much finer is sub-pixel at figure
 size and reads as nothing, which is how the first rough preset shipped invisible.
-Tune by screenshotting normal and rough stacked and asking whether a reader can
+Tune by screenshotting the presets side by side and asking whether a reader can
 tell them apart at a glance; if not, the preset is not doing its job.
 
 Every `rotate()` in the CSS multiplies by `var(--tilt)`, so new classes should too:

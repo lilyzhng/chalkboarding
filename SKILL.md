@@ -42,7 +42,7 @@ All wired into `template.html`. Full spec in `design-system.md`.
 | Chalk ink | `#F5F4EF`, secondary `rgba(245,244,239,.55)`, nothing dimmer |
 | Font | `PencilPete.ttf` for everything on the slate, relative `url("PencilPete.ttf")`, copied next to the output |
 | Hand-drawn waver | SVG turbulence filters `#slip1..3` applied probabilistically by the end-of-body script; longer element = more likely to waver |
-| Chalkiness | `data-chalk="tidy\|normal\|rough"` on `.slate`, from question 4. One attribute sets slip strength, waver probability, `--tilt`, stroke grain (gaps), and long-stroke fade. Never hand-tune the filters per figure |
+| Chalkiness | `data-chalk="tidy\|rough\|shaky"` on `.slate`, from question 4. One attribute sets slip strength, waver probability, `--tilt`, stroke grain, dash breaks, stroke-width jitter, and long-stroke fade. Never hand-tune the filters per figure |
 | Micro-imperfection | alternating rotations ±0.25° to 1.4°, irregular radii like `10px 8px 11px 7px` |
 | Animation | one `paint(t)`, beat constants at the top, single rAF loop, eraser replay button, freeze on final frame |
 | Fixed heights | status, tally, badge lines use `height` + `line-height` + `nowrap`, never `min-height`; board height never changes mid-play |
@@ -91,7 +91,7 @@ Run ONE questionnaire with all four questions in a single call. Use the native s
 | 1 | Idea | What is the one thing this figure says? | 2-3 one-line read-backs of their text, each a different emphasis (mechanism / payoff / contrast) |
 | 2 | Layout | What does it look like? | A. Line chart: a crossing or gap is the point. B. Two-panel contrast: same input, two methods. C. Step-by-step walkthrough: one beat at a time. D. Architecture diagram: components and flows |
 | 3 | Motion | How does it move? | Plays itself once (default) / buttons the reader toggles / slider the reader drags |
-| 4 | Chalk | How chalky? | Tidy: a careful teacher, faint waver, no gaps, no tilt / Normal (default): what the examples use, light dust / Rough: end of a long lecture, strong waver, strokes skip and break, long lines fade toward the end, visible tilt |
+| 4 | Chalk | How chalky? | Tidy (default): a careful teacher, light dust, faint waver on long strokes / Rough: end of a long day, strokes skip and break, long lines fade, visible tilt / Shaky: a kid or a first-day teacher, big wobble, dashed-out gaps, uneven stroke weight, everything tilts |
 
 Write each layout option in terms of THEIR figure, not generic text. "Other" is where they describe it in their own words.
 
@@ -187,7 +187,7 @@ Look at every image and check:
 - [ ] waver visible on long strokes, labels still legible
 - [ ] the `--replay` shot matches the start shot
 - [ ] emoji count is 0-2 and none repeat; every crowd is drawn in chalk
-- [ ] if the preset is not normal, a stacked normal-vs-preset screenshot shows a difference at a glance
+- [ ] if the preset is not tidy, a side-by-side tidy-vs-preset screenshot shows a difference at a glance
 
 Deliver the file plus the one-line caption.
 

@@ -16,8 +16,8 @@
   --frame:#7A5230;
   --tilt:1;   /* chalkiness multiplier for rotations, set by data-chalk */
 }
-.slate[data-chalk="tidy"]{--tilt:.3}
 .slate[data-chalk="rough"]{--tilt:2.2}
+.slate[data-chalk="shaky"]{--tilt:3.6}
 *{box-sizing:border-box}
 html{zoom:0.8}
 body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
@@ -95,7 +95,7 @@ body.standalone .wrap{width:100%}
   <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F5F4EF" stop-opacity="1"/><stop offset=".4" stop-color="#F5F4EF" stop-opacity=".85"/><stop offset="1" stop-color="#F5F4EF" stop-opacity=".22"/></linearGradient>
 </svg>
 <div class="wrap">
-  <div class="board"><div class="slate" data-chalk="normal">
+  <div class="board"><div class="slate" data-chalk="tidy">
     <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
 
     <div class="panel a">
@@ -173,16 +173,17 @@ body.standalone .wrap{width:100%}
 (function(){
   // hand-drawn slips: long strokes are harder to draw straight, so the longer
   // the element, the more likely (and eventually certain) a waver somewhere.
-  // chalkiness preset from <div class="slate" data-chalk="tidy|normal|rough">
-  // scale: slip filter strength. grain: alpha slope/intercept of the noise mask (higher intercept = fewer gaps).
+  // chalkiness preset from <div class="slate" data-chalk="tidy|rough|shaky">
+  // scale: slip filter strength. grain: alpha slope/intercept of the noise mask (lower intercept = more gaps).
   // fadeOver: SVG paths longer than this (px) get the fading stroke; 0 = never.
+  // breaks: fraction of SVG paths that get random dash gaps. jitter: max stroke-width multiplier spread.
   var CHALK = {
-    tidy:   { scale: 0.5, grain: null,                          fadeOver: 0,   pClean: function(w){ return w < 280 ? 1 : 0.5; } },
-    normal: { scale: 1,   grain: {slope: 1.6, intercept: 0.45}, fadeOver: 0,   pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
-    rough:  { scale: 2.6, grain: {slope: 3.2, intercept: -0.35}, fadeOver: 120, pClean: function(w){ return w < 60 ? 0.4 : 0; } }
+    tidy:  { scale: 1,   grain: {slope: 1.6, intercept: 0.45},  fadeOver: 0,   breaks: 0,   jitter: 0,   pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
+    rough: { scale: 2.6, grain: {slope: 3.2, intercept: -0.35}, fadeOver: 120, breaks: 0.3, jitter: 0.5, pClean: function(w){ return w < 60 ? 0.4 : 0; } },
+    shaky: { scale: 4.6, grain: {slope: 3.6, intercept: -0.55}, fadeOver: 50,  breaks: 0.8, jitter: 1.2, pClean: function(w){ return 0; } }
   };
   var slate = document.querySelector('.slate');
-  var preset = CHALK[(slate && slate.getAttribute('data-chalk')) || 'normal'] || CHALK.normal;
+  var preset = CHALK[(slate && slate.getAttribute('data-chalk')) || 'tidy'] || CHALK.tidy;
   document.querySelectorAll('feDisplacementMap').forEach(function(m){
     m.setAttribute('scale', (parseFloat(m.getAttribute('scale')) * preset.scale).toFixed(2));
   });
@@ -191,6 +192,21 @@ body.standalone .wrap{width:100%}
     grainA.setAttribute('slope', preset.grain.slope); grainA.setAttribute('intercept', preset.grain.intercept);
     document.querySelectorAll('.slate svg path, .slate svg circle, .slate svg rect').forEach(function(n){
       if (!n.closest('.replay')) n.style.filter = 'url(#grain)';
+    });
+  }
+  if (preset.breaks || preset.jitter){
+    var paths = document.querySelectorAll('.slate svg path, .slate svg circle, .slate svg rect');
+    paths.forEach(function(n, i){
+      if (n.closest('.replay') || n.classList.contains('draw') || n.classList.contains('cut')) return;
+      var r1 = ((i * 37 + 11) % 100) / 100, r2 = ((i * 53 + 7) % 100) / 100;
+      if (preset.jitter){
+        var sw = parseFloat(getComputedStyle(n).strokeWidth) || 2;
+        n.style.strokeWidth = (sw * (1 + (r2 - 0.5) * preset.jitter)).toFixed(2);
+      }
+      if (preset.breaks && r1 < preset.breaks && !n.style.strokeDasharray){
+        var a = 6 + Math.round(r2 * 14), b = 2 + Math.round(r1 * 3), c = 10 + Math.round(r1 * 18);
+        n.style.strokeDasharray = a + ' ' + b + ' ' + c + ' ' + b;
+      }
     });
   }
   if (preset.fadeOver){

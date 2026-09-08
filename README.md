@@ -4,9 +4,9 @@ A coding-agent skill for animated chalkboard figures: a green slate in a wooden 
 
 ## What This Does
 
-**Chalkboarding** turns an idea into a self-contained HTML figure that looks like a teacher drew it on a board and animates like a lecture: elements appear in narrative order, a status line tells the viewer where they are, and an eraser button replays the whole thing. One file, no dependencies, embeds in any page via iframe, prints as a frozen final frame for papers, and exports to a crisp MP4 for Twitter.
+**Chalkboarding** turns an idea into a figure that looks like a teacher drew it on a chalkboard, and animates it as if you were sitting in the class: things appear in the order the teacher would draw them, and an eraser button replays the lesson. One HTML file, no dependencies. Embed it in a page, print the final frame for a paper, or export an MP4 for Twitter.
 
-The workflow is one idea applied repeatedly: **divide and conquer**. Never conceive and render in the same step. An ASCII mock separates *what the figure says* from *how it looks*. Tracing separates *the shape* from *the drawing of it*. An idempotent `paint(t)` separates *the story's beats* from *the rendering of any moment*.
+The trick is to never think and draw in the same step. Sketch the layout in ASCII first, trace shapes instead of freehanding them, then render.
 
 ## Examples
 

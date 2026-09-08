@@ -98,7 +98,7 @@ python3 scripts/export_media.py my_chalk.html --seconds 10             # match t
 python3 scripts/export_media.py toggle_chalk.html --click "#mRelax@4"  # click a control mid-clip
 ```
 
-The exporter drives the page with a paused virtual clock and screenshots every frame at 2x, so the chalk stays sharp and the timing is exact. Add `--gif` if you need a GIF; it is bigger and softer.
+Add `--gif` if you need a GIF.
 
 ### Trace an Image into a Pixel Grid
 

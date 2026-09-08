@@ -152,7 +152,7 @@ One attribute on the slate sets all three imperfection systems at once:
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | tidy (default) | 1x | length-weighted curve above | 1 | light dust | none | none | none | a careful teacher |
 | rough | 2.6x | everything over 60px | 2.2 | visible gaps | 30% of paths | ±25% | paths over 120px fade to 22% | end of a long day |
-| shaky | 4.6x | everything | 3.6 | heavy gaps | 80% of paths | ±60% | paths over 50px fade | a kid, or a first-day teacher |
+| shaky | 4.6x | everything | 3.6 | heavy gaps | 80% of paths | ±60% | paths over 50px fade | a first-day teacher |
 
 Seven imperfection systems, one attribute. Grain is `#grain`, a noise-masked alpha
 filter applied to every SVG stroke on the slate (`filterUnits="userSpaceOnUse"`,

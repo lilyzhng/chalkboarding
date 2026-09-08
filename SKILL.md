@@ -91,7 +91,7 @@ Run ONE questionnaire with all four questions in a single call. Use the native s
 | 1 | Idea | What is the one thing this figure says? | 2-3 one-line read-backs of their text, each a different emphasis (mechanism / payoff / contrast) |
 | 2 | Layout | What does it look like? | A. Line chart: a crossing or gap is the point. B. Two-panel contrast: same input, two methods. C. Step-by-step walkthrough: one beat at a time. D. Architecture diagram: components and flows |
 | 3 | Motion | How does it move? | Plays itself once (default) / buttons the reader toggles / slider the reader drags |
-| 4 | Chalk | How chalky? | Tidy (default): a careful teacher, light dust, faint waver on long strokes / Rough: end of a long day, strokes skip and break, long lines fade, visible tilt / Shaky: a kid or a first-day teacher, big wobble, dashed-out gaps, uneven stroke weight, everything tilts |
+| 4 | Chalk | How chalky? | Tidy (default): a careful teacher, light dust, faint waver on long strokes / Rough: end of a long day, strokes skip and break, long lines fade, visible tilt / Shaky: a first-day teacher, big wobble, dashed-out gaps, uneven stroke weight, everything tilts |
 
 Write each layout option in terms of THEIR figure, not generic text. "Other" is where they describe it in their own words.
 

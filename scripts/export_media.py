@@ -12,6 +12,7 @@ Usage:
     python3 scripts/export_media.py examples/example5_decoding_race.html
     python3 scripts/export_media.py my_chalk.html --seconds 11 --fps 30 --width 1200
     python3 scripts/export_media.py my_chalk.html --gif            # also write a GIF
+    python3 scripts/export_media.py toggle_chalk.html --click "#mRelax@4"   # click an element at 4s
 
 Output: <name>.mp4 (and <name>.gif with --gif) next to the input, or in --out.
 The result is cropped to the board itself, so there is no page background.
@@ -42,7 +43,7 @@ def board_box(page):
     }""")
 
 
-def render_frames(html_path, seconds, fps, frames_dir):
+def render_frames(html_path, seconds, fps, frames_dir, clicks=()):
     url = "file://" + os.path.abspath(html_path)
     n_frames = int(seconds * fps)
     with sync_playwright() as p:
@@ -72,7 +73,11 @@ def render_frames(html_path, seconds, fps, frames_dir):
         page.evaluate("document.fonts.ready")
 
         step_ms = 1000.0 / fps
+        pending = sorted(clicks, key=lambda c: c[1])
         for i in range(n_frames):
+            t = i / fps
+            while pending and pending[0][1] <= t:
+                page.click(pending.pop(0)[0])
             page.screenshot(path=os.path.join(frames_dir, f"f{i:05d}.png"), clip=box)
             page.clock.run_for(int(round(step_ms)))
         browser.close()
@@ -116,7 +121,13 @@ def main():
     ap.add_argument("--width", type=int, default=1200, help="output width in px (default 1200)")
     ap.add_argument("--out", help="output directory (default: next to the input)")
     ap.add_argument("--gif", action="store_true", help="also write a GIF (larger and softer than the MP4)")
+    ap.add_argument("--click", action="append", default=[], metavar="SELECTOR@SECONDS",
+                    help="click a CSS selector at a given second, e.g. '#mRelax@4'; repeatable")
     args = ap.parse_args()
+    clicks = []
+    for c in args.click:
+        sel, _, at = c.rpartition("@")
+        clicks.append((sel, float(at)))
 
     for html in args.html:
         name = os.path.splitext(os.path.basename(html))[0]
@@ -124,7 +135,7 @@ def main():
         os.makedirs(out_dir, exist_ok=True)
         frames_dir = tempfile.mkdtemp(prefix="chalk-frames-")
         try:
-            render_frames(html, args.seconds, args.fps, frames_dir)
+            render_frames(html, args.seconds, args.fps, frames_dir, clicks)
             encode(frames_dir, os.path.join(out_dir, name), args.fps, args.width, args.gif)
         finally:
             shutil.rmtree(frames_dir, ignore_errors=True)

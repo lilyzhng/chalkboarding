@@ -2,12 +2,6 @@
 
 A coding-agent skill for animated chalkboard figures: a green slate in a wooden frame, hand-drawn chalk lettering with a deliberately wobbly stroke, and elements that animate onto the board like a lecture unfolding. Built for the NeurIPS 2026 education paper *Speculative Decoding: How It Evolved, When It Stays Lossless, and What's Next*. The core `SKILL.md` can be read by any coding agent with filesystem and shell access.
 
-<!-- To get inline playback on GitHub, drag examples/media/example1_kangaroo.mp4 into this
-     README in the GitHub web editor; it becomes a user-attachments URL that renders as a player. -->
-[![The kangaroo: paint pixel by pixel vs denoise all at once](examples/media/example1_kangaroo.png)](examples/media/example1_kangaroo.mp4)
-
-*Click any figure to play the recorded MP4. Every figure below is one HTML file; the videos were rendered with `scripts/export_media.py`.*
-
 ## What This Does
 
 **Chalkboarding** turns an idea into a self-contained HTML figure that looks like a teacher drew it on a board and animates like a lecture: elements appear in narrative order, a status line tells the viewer where they are, and an eraser button replays the whole thing. One file, no dependencies, embeds in any page via iframe, prints as a frozen final frame for papers, and exports to a crisp MP4 for Twitter.
@@ -22,6 +16,46 @@ The workflow is one idea applied repeatedly: **divide and conquer**. Never conce
 - **Trace, Don't Freehand** — Coding models have weak spatial sense. `scripts/trace_bitmap.py` turns any image (an emoji, a logo, a silhouette) into the pixel bitmap a figure consumes. The kangaroo was traced from the Twemoji kangaroo's alpha channel.
 - **Replay, Reduced Motion, Print** — One `paint(t)` function renders any moment from scratch, so the eraser button, `prefers-reduced-motion`, and `beforeprint` all fall out for free.
 - **Be Fun** — A great teacher reaches for silly concrete examples. Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. The skill pushes for a character and an everyday story before it draws boxes.
+
+## Examples
+
+Three figures from the NeurIPS set. Click any of them to play the MP4; every one is a single HTML file, and the videos were rendered with `scripts/export_media.py`.
+
+<!-- For inline playback on GitHub, drag the MP4 into this README in the web editor;
+     it becomes a user-attachments URL that renders as a player. -->
+
+### The kangaroo: paint pixel by pixel vs denoise all at once
+
+[![kangaroo](examples/media/example1_kangaroo.png)](examples/media/example1_kangaroo.mp4)
+
+Two 32x32 canvases paint the same kangaroo. The left one fills cell by cell and takes seven seconds. The right one starts as noise and converges every pixel at once in three. When it finishes, the hook lands: what about drafting tokens in parallel? The kangaroo was traced from an emoji with `scripts/trace_bitmap.py`, not drawn freehand.
+
+### Rejection sampling: "NeurIPS 2026 is in ___"
+
+[![rejection sampling](examples/media/example3_rejection_sampling.png)](examples/media/example3_rejection_sampling.mp4)
+
+The draft proposes San Diego, the target prefers Sydney. Each token shows p and q as chalk bars and the accept probability underneath. Rejected tokens get struck through and corrected. The legend explains the three symbols in one line each.
+
+### Drafting cost vs block size
+
+[![flat cost](examples/media/example7_dflash_flat_cost.png)](examples/media/example7_dflash_flat_cost.mp4)
+
+A chalk chart that draws itself as the block size slider sweeps from 1 to 16. EAGLE-3's cost climbs one layer-pass per token; DFlash stays flat at five. The break-even point is circled where the lines cross, and the verdict line under the chart updates with the slider.
+
+All eight figures live in `examples/`, with an MP4 of each in `examples/media/`. Open any of them directly in a browser; they load the font from `../fonts/`.
+
+| Figure | Idea |
+|---|---|
+| `example1_kangaroo.html` | Paint pixel by pixel vs denoise all at once |
+| `example2_dog_and_cat.html` | "The best pet is a ___", strict vs relaxed verification, emoji sized by probability |
+| `example3_rejection_sampling.html` | Rejection sampling with p, q, and accept bars per token |
+| `example4_go_to_school.html` | Independent top-1 vs path selection, SVG curve draw-on |
+| `example5_decoding_race.html` | Five decoders on the same sentence |
+| `example6_twin_timelines.html` | Twin timeline panels with chips, chunks, and a playhead |
+| `example7_dflash_flat_cost.html` | Drafting cost vs block size, interactive slider |
+| `example8_dflash_kv_injection.html` | KV injection, many labeled SVG panels |
+
+`worked-examples.md` records, for the richest ones, the regeneration prompt, the ASCII mock it implies, and the implementation tricks the finished files don't explain.
 
 ## Installation
 
@@ -78,6 +112,7 @@ The skill will:
 ```bash
 python3 scripts/export_media.py my_chalk.html                        # 1200px MP4, cropped to the board
 python3 scripts/export_media.py my_chalk.html --seconds 11 --fps 30  # match the figure's own length
+python3 scripts/export_media.py toggle_chalk.html --click "#mRelax@4" # click a control mid-clip
 ```
 
 The exporter drives the page with a paused virtual clock and screenshots every frame at 2x, so the chalk stays sharp and the timing is exact. Add `--gif` if you need a GIF; it is bigger and softer.
@@ -87,43 +122,6 @@ The exporter drives the page with a paused virtual clock and screenshots every f
 ```bash
 python3 scripts/trace_bitmap.py kangaroo.png --size 32   # prints the X/. bitmap array
 ```
-
-## Examples
-
-Three figures from the NeurIPS set. Click to play.
-
-### The kangaroo: paint pixel by pixel vs denoise all at once
-
-[![kangaroo](examples/media/example1_kangaroo.png)](examples/media/example1_kangaroo.mp4)
-
-Two 32x32 canvases paint the same kangaroo. The left one fills cell by cell and takes seven seconds. The right one starts as noise and converges every pixel at once in three. When it finishes, the hook lands: what about drafting tokens in parallel? The kangaroo was traced from an emoji with `scripts/trace_bitmap.py`, not drawn freehand.
-
-### Rejection sampling: "NeurIPS 2026 is in ___"
-
-[![rejection sampling](examples/media/example3_rejection_sampling.png)](examples/media/example3_rejection_sampling.mp4)
-
-The draft proposes San Diego, the target prefers Sydney. Each token shows p and q as chalk bars and the accept probability underneath. Rejected tokens get struck through and corrected. The legend explains the three symbols in one line each.
-
-### The decoding race
-
-[![decoding race](examples/media/example5_decoding_race.png)](examples/media/example5_decoding_race.mp4)
-
-Five decoders write the same sentence on a shared time axis. Vanilla places one chip per second. Each speculative decoder places a chunk per verification pass, so the lanes finish at different times and the acceptance length is visible as chunk width.
-
-All eight figures live in `examples/`. Open any of them directly in a browser; they load the font from `../fonts/`.
-
-| Figure | Idea |
-|---|---|
-| `example1_kangaroo.html` | Paint pixel by pixel vs denoise all at once |
-| `example2_dog_and_cat.html` | "The best pet is a ___", strict vs relaxed verification, emoji sized by probability |
-| `example3_rejection_sampling.html` | Rejection sampling with p, q, and accept bars per token |
-| `example4_go_to_school.html` | Independent top-1 vs path selection, SVG curve draw-on |
-| `example5_decoding_race.html` | Five decoders on the same sentence |
-| `example6_twin_timelines.html` | Twin timeline panels with chips, chunks, and a playhead |
-| `example7_dflash_flat_cost.html` | Drafting cost vs block size, interactive slider |
-| `example8_dflash_kv_injection.html` | KV injection, many labeled SVG panels |
-
-`worked-examples.md` records, for the richest ones, the regeneration prompt, the ASCII mock it implies, and the implementation tricks the finished files don't explain.
 
 ## Architecture
 

@@ -8,15 +8,6 @@ A coding-agent skill for animated chalkboard figures: a green slate in a wooden 
 
 The workflow is one idea applied repeatedly: **divide and conquer**. Never conceive and render in the same step. An ASCII mock separates *what the figure says* from *how it looks*. Tracing separates *the shape* from *the drawing of it*. An idempotent `paint(t)` separates *the story's beats* from *the rendering of any moment*.
 
-### Key Features
-
-- **Zero Dependencies** — Single HTML files with inline CSS/JS. Open them in a browser, embed them in a page, print them.
-- **ASCII Mock First** — Layout and animation beats are sketched as an ASCII wireframe in chat and iterated cheaply before any styled HTML exists.
-- **The Chalk Hand** — One font plus three layers of imperfection: SVG turbulence filters applied with probability that grows with stroke length, alternating micro-rotations, irregular corner radii. Everything that makes text read as hand-drawn lives in `fonts/`.
-- **Trace, Don't Freehand** — Coding models have weak spatial sense. `scripts/trace_bitmap.py` turns any image (an emoji, a logo, a silhouette) into the pixel bitmap a figure consumes. The kangaroo was traced from the Twemoji kangaroo's alpha channel.
-- **Replay, Reduced Motion, Print** — One `paint(t)` function renders any moment from scratch, so the eraser button, `prefers-reduced-motion`, and `beforeprint` all fall out for free.
-- **Be Fun** — A great teacher reaches for silly concrete examples. Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. The skill pushes for a character and an everyday story before it draws boxes.
-
 ## Examples
 
 Three figures from the NeurIPS set. Click any of them to play the MP4; every one is a single HTML file, and the videos were rendered with `scripts/export_media.py`.
@@ -56,6 +47,15 @@ All eight figures live in `examples/`, with an MP4 of each in `examples/media/`.
 | `example8_dflash_kv_injection.html` | KV injection, many labeled SVG panels |
 
 `worked-examples.md` records, for the richest ones, the regeneration prompt, the ASCII mock it implies, and the implementation tricks the finished files don't explain.
+
+### Key Features
+
+- **Zero Dependencies** — Single HTML files with inline CSS/JS. Open them in a browser, embed them in a page, print them.
+- **ASCII Mock First** — Layout and animation beats are sketched as an ASCII wireframe in chat and iterated cheaply before any styled HTML exists.
+- **The Chalk Hand** — One font plus three layers of imperfection: SVG turbulence filters applied with probability that grows with stroke length, alternating micro-rotations, irregular corner radii. Everything that makes text read as hand-drawn lives in `fonts/`.
+- **Trace, Don't Freehand** — Coding models have weak spatial sense. `scripts/trace_bitmap.py` turns any image (an emoji, a logo, a silhouette) into the pixel bitmap a figure consumes. The kangaroo was traced from the Twemoji kangaroo's alpha channel.
+- **Replay, Reduced Motion, Print** — One `paint(t)` function renders any moment from scratch, so the eraser button, `prefers-reduced-motion`, and `beforeprint` all fall out for free.
+- **Be Fun** — A great teacher reaches for silly concrete examples. Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. The skill pushes for a character and an everyday story before it draws boxes.
 
 ## Installation
 

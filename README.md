@@ -40,10 +40,10 @@ Four more live in `examples/`, each with an MP4 in `examples/media/`: dog and ca
 
 ### Key Features
 
-- **The Chalk Hand** — One font plus three layers of imperfection: SVG turbulence filters applied with probability that grows with stroke length, alternating micro-rotations, irregular corner radii. Everything that makes text read as hand-drawn lives in `fonts/`.
-- **Trace, Don't Freehand** — Coding models have weak spatial sense. `scripts/trace_bitmap.py` turns any image (an emoji, a logo, a silhouette) into the pixel bitmap a figure consumes. The kangaroo was traced from the Twemoji kangaroo's alpha channel.
-- **Replay, Reduced Motion, Print** — One `paint(t)` function renders any moment from scratch, so the eraser button, `prefers-reduced-motion`, and `beforeprint` all fall out for free.
-- **Be Fun** — A great teacher reaches for silly concrete examples. Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. The skill pushes for a character and an everyday story before it draws boxes.
+- **The Chalk Hand**: One font plus three layers of imperfection: SVG turbulence filters applied with probability that grows with stroke length, alternating micro-rotations, irregular corner radii. Everything that makes text read as hand-drawn lives in `fonts/`.
+- **Trace, Don't Freehand**: Coding models have weak spatial sense. `scripts/trace_bitmap.py` turns any image (an emoji, a logo, a silhouette) into the pixel bitmap a figure consumes. The kangaroo was traced from the Twemoji kangaroo's alpha channel.
+- **Replay, Reduced Motion, Print**: One `paint(t)` function renders any moment from scratch, so the eraser button, `prefers-reduced-motion`, and `beforeprint` all fall out for free.
+- **Be Fun**: A great teacher reaches for silly concrete examples. Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. The skill pushes for a character and an everyday story before it draws boxes.
 
 ## Installation
 

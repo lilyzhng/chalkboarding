@@ -1,4 +1,4 @@
-/* chalkboard.css — the base design system extracted verbatim from template.html.
+/* chalkboard.css: the base design system extracted verbatim from template.html.
    Figures ship as single self-contained HTML files, so template.html inlines this;
    this copy exists for agents that need to paste the system into an existing page
    or diff a figure's CSS against the canonical one. Font file must sit next to the HTML. */

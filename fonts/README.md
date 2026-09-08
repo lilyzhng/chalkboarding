@@ -1,4 +1,4 @@
-# fonts/ — the chalk hand
+# fonts/: the chalk hand
 
 The chalkboard look is one font plus three layers of deliberate imperfection.
 This folder holds all of them so you can see, and reuse, exactly what makes text

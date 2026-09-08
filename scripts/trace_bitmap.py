@@ -13,7 +13,7 @@ Usage:
     python3 trace_bitmap.py logo.png --size 24 --threshold 0.35
 
 Then paste the printed JS array into your figure. Tip: emoji PNGs (e.g. from
-the Twemoji repo) trace beautifully via their alpha channel — that's how the
+the Twemoji repo) trace beautifully via their alpha channel, that's how the
 kangaroo was made.
 """
 import argparse
@@ -70,7 +70,7 @@ def main():
 
     filled = sum(r.count("X") for r in rows_out)
     if filled == 0:
-        sys.exit("traced nothing — try --mode dark/light or a lower --threshold")
+        sys.exit("traced nothing, try --mode dark/light or a lower --threshold")
 
     # preview for the terminal
     print("\n".join(r.replace(".", "·").replace("X", "█") for r in rows_out))

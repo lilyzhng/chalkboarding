@@ -1,4 +1,4 @@
-/* chalky.css — the font face plus the geometry that refuses to be perfect.
+/* chalky.css: the font face plus the geometry that refuses to be perfect.
    Font file must sit next to the HTML that loads it. */
 @font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}
 

@@ -1,7 +1,7 @@
 ---
 name: chalkboarding
 description: >
-  Create animated chalkboard-style HTML figures — a green slate in a wooden frame,
+  Create animated chalkboard-style HTML figures, a green slate in a wooden frame,
   hand-drawn chalk lettering, wobbly strokes, and elements that animate onto the
   board like a lecture unfolding. Use this skill whenever the user asks for a
   "chalkboard figure", "chalk figure", "blackboard diagram", a figure for a paper,
@@ -20,14 +20,14 @@ whole thing. The output embeds cleanly in a webpage via iframe and prints as a
 static final frame for papers.
 
 The whole workflow is one idea applied repeatedly: **divide and conquer**.
-Never ask yourself to conceive and render in the same step — split every hard
+Never ask yourself to conceive and render in the same step, split every hard
 visual goal into a structure step and a manifestation step. The ASCII mock
 separates *what the figure says* from *how it looks*; tracing separates *the
 shape* from *the drawing of it*; `paint(t)` separates *the story's beats*
 from *the rendering of any moment*. Whenever part of a figure feels too hard
-to produce directly, don't push harder — find the split.
+to produce directly, don't push harder, find the split.
 
-## Phase 0 — intake (three questions, one at a time)
+## Phase 0: intake (three questions, one at a time)
 
 Before drawing anything, ask these in order and wait for each answer. One
 question per message; do not bundle them. The goal is to learn what the user
@@ -57,10 +57,10 @@ not go looking for the closest one, and never bend their picture to fit ours.
 If the user gave all of this up front, skip the questions and just state the
 read-back line.
 
-Do not skip phase 1 for anything non-trivial — layout
+Do not skip phase 1 for anything non-trivial, layout
 mistakes are 10x cheaper to fix in ASCII than in styled HTML.
 
-## Phase 1 — ASCII mock
+## Phase 1: ASCII mock
 
 Turn the idea into an ASCII wireframe in the conversation, at roughly the real
 aspect ratio (figures are ~940px wide). Show:
@@ -103,7 +103,7 @@ is the contract: the number of panels, the reading order, and the beat table
 carry over 1:1 into phase 2.
 
 While mocking, push for **one idea per figure**. A chalkboard reads like a
-teacher's board, not a dashboard — if the mock needs more than ~2 panels or
+teacher's board, not a dashboard, if the mock needs more than ~2 panels or
 ~3 beats-per-panel to make its point, suggest splitting into two figures.
 
 And push to **be fun**. The style works because it feels like a great teacher
@@ -111,10 +111,10 @@ at a board, and great teachers reach for silly, concrete, everyday examples:
 rejection sampling is "The best pet is a ___" with a cat and a dog, parallel
 denoising is painting a kangaroo, path selection is racing to school. So at
 mock time, before drawing boxes, ask: *what's the everyday story here, and
-who's the character?* An emoji can be the character — and can carry data
+who's the character?* An emoji can be the character, and can carry data
 (a 🐕 that literally grows as its probability share grows beats a bar chart).
 Small winks are welcome (a venue in-joke, a deadpan verdict line like "the
-best pet becomes a dog") — one per figure; it's seasoning, not the meal.
+best pet becomes a dog"), one per figure; it's seasoning, not the meal.
 Abstract boxes-and-arrows is the fallback, not the default.
 
 **What never goes on the board:** a verdict or moral sentence ("the price is
@@ -124,7 +124,7 @@ page says what it means and where it came from. Every figure you deliver
 should come with a one-line caption for that purpose, written separately.
 Labels on the slate stay short and concrete: names, numbers, one-line status.
 
-## Phase 2 — convert to chalkboard HTML
+## Phase 2: convert to chalkboard HTML
 
 Start from `template.html` (a complete working skeleton) and read
 `design-system.md` for the visual language: exact colors, board
@@ -132,35 +132,35 @@ construction, the chalky font, and the hand-drawn discontinuity system.
 For animation recipes (chips, progress fills, playheads, SVG curve draw-on,
 pixel grids), read `animation-patterns.md`. Before building,
 skim `worked-examples.md` and open the example figure closest to
-what you're making — it records regeneration prompts, mocks, and the
+what you're making, it records regeneration prompts, mocks, and the
 implementation tricks (bitmap tracing, declarative `data-t` beats,
 hand-drawn SVG pictograms) that the finished files don't explain.
 
-The non-negotiables that make the style read as "chalkboard" — all already
+The non-negotiables that make the style read as "chalkboard", all already
 wired in the template:
 
 1. **Board**: wooden frame `#7A5230` wrapping a deep-green slate `#12291d`
    with faint radial "chalk dust" lighting. Chalk ink is `#F5F4EF`,
    secondary ink `rgba(245,244,239,.55)`.
 2. **Chalky font**: `PencilPete.ttf` for everything on the slate, loaded via
-   `@font-face` with a relative `url("PencilPete.ttf")` — copy the font from
+   `@font-face` with a relative `url("PencilPete.ttf")`, copy the font from
    this repo's `fonts/` (or reuse one already in the project) so it sits
    next to the output HTML.
 3. **Discontinuity (hand-drawn feel)**: three SVG turbulence filters
    (`#slip1..3`) plus the standard end-of-body script that applies them
-   probabilistically — the longer an element, the more likely it wavers,
+   probabilistically, the longer an element, the more likely it wavers,
    exactly like real handwriting. Add every new visual class to that
    script's selector list (SVG `<text>` is not covered by it: put
    `filter:url(#slip1)` on the SVG element directly). Complement with small alternating rotations
    (±0.25°–1.4°) and irregular border-radii like `10px 8px 11px 7px`.
 4. **Animation model**: one idempotent `paint(t)` function, beat times as
    named constants at the top of the script, a single rAF loop, and the
-   eraser replay button. Never accumulate state per frame — `paint(t)` must
+   eraser replay button. Never accumulate state per frame, `paint(t)` must
    render any `t` from scratch so replay, reduced-motion (jump to final
    frame), and `beforeprint` (paint final frame) all fall out for free.
 5. **Embedding contract**: `background: transparent` on body, `html{zoom:0.8}`,
    and the `postHeight()` snippet that posts `{chalkHeight, chalkSrc}` to the
-   parent — this is how host pages size the iframe. Keep it verbatim.
+   parent, this is how host pages size the iframe. Keep it verbatim.
 
 ### Complex imagery: trace, don't freehand
 
@@ -170,7 +170,7 @@ try. Split drawing into **trace** (get the shape from a reference) and
 **render** (fill it in chalk):
 
 - If you're unsure what the concept even looks like, first find one or two
-  reference images (web search) and study them — that's how the diffusion
+  reference images (web search) and study them, that's how the diffusion
   analogy figure locked in "left: paint pixel by pixel, right: denoise all
   at once" before any drawing happened.
 - For pixel-grid subjects, trace a real image instead of inventing cells:
@@ -180,7 +180,7 @@ try. Split drawing into **trace** (get the shape from a reference) and
   Twemoji kangaroo's alpha channel this way.
 - For SVG pictograms, same principle at lower fidelity: describe the pose in
   a handful of landmark points taken from a reference (head circle, spine
-  line, limb angles), then connect them with round-capped strokes — trace
+  line, limb angles), then connect them with round-capped strokes, trace
   the skeleton, not the outline.
 
 Freehand is fine only for things with trivial geometry: stick figures,
@@ -189,7 +189,7 @@ arrows, boxes, simple charts.
 Name the file `<topic>_chalk.html` (append `-v2`, `-v3` when iterating so old
 versions stay comparable).
 
-## Phase 3 — QA before delivering
+## Phase 3: QA before delivering
 
 Screenshot the figure with `python3 scripts/screenshot_beats.py <file> --beats
 <start>,<mid>,<end>` and actually look at the images. Pick the three beats from
@@ -201,7 +201,7 @@ install chromium`); in a sandboxed agent, headless Chromium may need the
 sandbox off for that one command. Check:
 
 - nothing overflows the slate; chips wrap instead of clipping
-- the final frame is self-sufficient — a reader who only ever sees the frozen
+- the final frame is self-sufficient, a reader who only ever sees the frozen
   frame (print, reduced motion) still gets the full message, including
   every label and the "done" state
 - text contrast: primary chalk on board, secondary at .55 alpha, nothing dimmer

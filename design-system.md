@@ -148,13 +148,13 @@ One attribute on the slate sets all three imperfection systems at once:
 <div class="slate" data-chalk="tidy">   <!-- tidy | rough | shaky -->
 ```
 
-| Preset | Slip scale | Waver probability | `--tilt` | Grain | Dash breaks | Width jitter | Fade | Reads as |
+| Preset | Slip scale | `--tilt` | Grain | Dash breaks | Width jitter | Fade | Geometry | Reads as |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| tidy (default) | 1x | length-weighted curve above | 1 | light dust | none | none | none | a careful teacher |
-| rough | 2.6x | everything over 60px | 2.2 | visible gaps | 30% of paths | ±25% | paths over 120px fade to 22% | end of a long day |
-| shaky | 4.6x | everything | 3.6 | heavy gaps | 80% of paths | ±60% | paths over 50px fade | a first-day teacher |
+| tidy (default) | 1x | 1 | light dust | none | none | none | none | a careful teacher |
+| rough | 4.6x | 3.6 | heavy gaps | 80% of paths | ±60% | paths over 50px | circles ±20%, closed shapes stop 5% short, each shape tilts ±2° | end of a long day |
+| shaky | 6.5x | 5 | heavier | 95% of paths | ±80% | paths over 40px | circles ±45%, closed shapes stop 13% short, each shape tilts ±5° | a first-day teacher |
 
-Seven imperfection systems, one attribute. Grain is `#grain`, a noise-masked alpha
+Eight imperfection systems, one attribute. The geometry layer (`geo`) edits the shapes themselves: circle radius and center nudge, a `pathLength="1"` dash so closed shapes never quite meet, and a per-shape CSS rotate around its own center. Grain is `#grain`, a noise-masked alpha
 filter applied to every SVG stroke on the slate (`filterUnits="userSpaceOnUse"`,
 because a perfectly straight line has a zero-width bounding box and would
 otherwise vanish). Fade is `#fade`, a horizontal gradient stroke applied to

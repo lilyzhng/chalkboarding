@@ -16,8 +16,8 @@
   --frame:#7A5230;
   --tilt:1;   /* chalkiness multiplier for rotations, set by data-chalk */
 }
-.slate[data-chalk="rough"]{--tilt:2.2}
-.slate[data-chalk="shaky"]{--tilt:3.6}
+.slate[data-chalk="rough"]{--tilt:3.6}
+.slate[data-chalk="shaky"]{--tilt:5}
 *{box-sizing:border-box}
 html{zoom:0.8}
 body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
@@ -177,10 +177,12 @@ body.standalone .wrap{width:100%}
   // scale: slip filter strength. grain: alpha slope/intercept of the noise mask (lower intercept = more gaps).
   // fadeOver: SVG paths longer than this (px) get the fading stroke; 0 = never.
   // breaks: fraction of SVG paths that get random dash gaps. jitter: max stroke-width multiplier spread.
+  // geo: per-shape geometry wobble. radius: circle size spread, gap: closed shapes stop short of meeting (fraction of
+  // perimeter), rot: max per-shape tilt in degrees.
   var CHALK = {
-    tidy:  { scale: 1,   grain: {slope: 1.6, intercept: 0.45},  fadeOver: 0,   breaks: 0,   jitter: 0,   pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
-    rough: { scale: 2.6, grain: {slope: 3.2, intercept: -0.35}, fadeOver: 120, breaks: 0.3, jitter: 0.5, pClean: function(w){ return w < 60 ? 0.4 : 0; } },
-    shaky: { scale: 4.6, grain: {slope: 3.6, intercept: -0.55}, fadeOver: 50,  breaks: 0.8, jitter: 1.2, pClean: function(w){ return 0; } }
+    tidy:  { scale: 1,   grain: {slope: 1.6, intercept: 0.45},  fadeOver: 0,   breaks: 0,    jitter: 0,   geo: null,                              pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
+    rough: { scale: 4.6, grain: {slope: 3.6, intercept: -0.55}, fadeOver: 50,  breaks: 0.8,  jitter: 1.2, geo: {radius: 0.2, gap: 0.05, rot: 2},  pClean: function(w){ return 0; } },
+    shaky: { scale: 6.5, grain: {slope: 3.8, intercept: -0.6},  fadeOver: 40,  breaks: 0.95, jitter: 1.6, geo: {radius: 0.45, gap: 0.13, rot: 5}, pClean: function(w){ return 0; } }
   };
   var slate = document.querySelector('.slate');
   var preset = CHALK[(slate && slate.getAttribute('data-chalk')) || 'tidy'] || CHALK.tidy;
@@ -206,6 +208,30 @@ body.standalone .wrap{width:100%}
       if (preset.breaks && r1 < preset.breaks && !n.style.strokeDasharray){
         var a = 6 + Math.round(r2 * 14), b = 2 + Math.round(r1 * 3), c = 10 + Math.round(r1 * 18);
         n.style.strokeDasharray = a + ' ' + b + ' ' + c + ' ' + b;
+      }
+    });
+  }
+  if (preset.geo){
+    var shapes = document.querySelectorAll('.slate svg path, .slate svg circle, .slate svg rect');
+    shapes.forEach(function(n, i){
+      if (n.closest('.replay') || n.classList.contains('draw') || n.classList.contains('cut')) return;
+      var r1 = ((i * 29 + 5) % 100) / 100, r2 = ((i * 71 + 13) % 100) / 100, r3 = ((i * 43 + 23) % 100) / 100;
+      if (n.tagName === 'circle'){
+        var r = parseFloat(n.getAttribute('r')) || 0;
+        n.setAttribute('r', (r * (1 + (r1 - 0.5) * 2 * preset.geo.radius)).toFixed(2));
+        n.setAttribute('cx', (parseFloat(n.getAttribute('cx')) + (r2 - 0.5) * r * 0.4).toFixed(2));
+      }
+      var closed = n.tagName === 'rect' || n.tagName === 'circle' || /z\s*$/i.test(n.getAttribute('d') || '');
+      if (closed && preset.geo.gap && !n.style.strokeDasharray){
+        // stop short of closing: the corner never quite meets
+        n.setAttribute('pathLength', '1');
+        var g = preset.geo.gap * (0.6 + r3 * 0.8);
+        n.style.strokeDasharray = (1 - g).toFixed(3) + ' ' + g.toFixed(3);
+        n.style.strokeDashoffset = (r2 * 0.25).toFixed(3);
+      }
+      if (preset.geo.rot){
+        n.style.transformBox = 'fill-box'; n.style.transformOrigin = 'center';
+        n.style.transform = 'rotate(' + ((r1 - 0.5) * 2 * preset.geo.rot).toFixed(2) + 'deg)';
       }
     });
   }

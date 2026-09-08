@@ -1,31 +1,31 @@
 ---
 name: chalkboarding
 description: >
-  Create animated chalkboard-style HTML figures, a green slate in a wooden frame,
-  hand-drawn chalk lettering, wobbly strokes, and elements that animate onto the
-  board like a lecture unfolding. Use this skill whenever the user asks for a
-  "chalkboard figure", "chalk figure", "blackboard diagram", a figure for a paper,
-  blog, talk, or teaching material in the chalkboard style, or wants to convert a
-  sketch/mock/idea into one. Also use it when iterating on any existing *_chalk.html
-  figure. The workflow starts with a cheap ASCII mock for layout sign-off, then
-  converts it into the chalkboard design system.
+  Turns an idea into a figure that looks like a teacher drew it on a chalkboard
+  and animates it like a lesson: things appear in the order the teacher would
+  draw them, an eraser replays. One HTML file. Use when the user says
+  "chalkboard figure", "chalk figure", or "blackboard diagram", wants a sketch
+  or idea turned into one, or iterates on any *_chalk.html file.
 ---
 
 # Chalkboard figures
 
-Build a self-contained HTML file that looks like a hand-drawn chalkboard and
-animates like a lecture: elements appear in a narrative order, a playhead or
-status line tells the viewer where they are, and an eraser button replays the
-whole thing. The output embeds cleanly in a webpage via iframe and prints as a
-static final frame for papers.
+One self-contained HTML file that looks like a hand-drawn chalkboard and plays
+like a lecture: elements appear in narrative order, a status line says where
+you are, an eraser button replays. It embeds in a page via iframe, prints as
+the final frame, and exports to MP4.
 
-The whole workflow is one idea applied repeatedly: **divide and conquer**.
-Never ask yourself to conceive and render in the same step, split every hard
-visual goal into a structure step and a manifestation step. The ASCII mock
-separates *what the figure says* from *how it looks*; tracing separates *the
-shape* from *the drawing of it*; `paint(t)` separates *the story's beats*
-from *the rendering of any moment*. Whenever part of a figure feels too hard
-to produce directly, don't push harder, find the split.
+## Principle: divide and conquer
+
+Never conceive and render in the same step. Split every hard visual goal into
+a structure step and a manifestation step:
+
+- the ASCII mock separates *what the figure says* from *how it looks*
+- tracing separates *the shape* from *the drawing of it*
+- `paint(t)` separates *the story's beats* from *the rendering of any moment*
+
+When part of a figure feels too hard to produce directly, don't push harder,
+find the split.
 
 ## Phase 0: intake (one questionnaire, always)
 

@@ -156,10 +156,10 @@ Freehanding a kangaroo or an opera house from imagined coordinates produces mush
 ## Phase 3: QA Before Delivering
 
 ```
-python3 scripts/screenshot_beats.py <file> --beats <start>,<mid>,<end> --replay
+bash scripts/qa.sh <file> --beats <start>,<mid>,<end> --replay
 ```
 
-Pick the three beats from your own beat table: just after t=0, right after the key beat, past your `END` constant. The defaults `0.3,3,12.5` fit a 10-12s figure, not yours. Needs `pip install playwright && playwright install chromium`; a sandboxed agent may need the sandbox off for that one command.
+Pick the three beats from your own beat table: just after t=0, right after the key beat, past your `END` constant. The defaults `0.3,3,12.5` fit a 10-12s figure, not yours. First run installs Playwright into `~/.cache/chalkboarding` by itself. A sandboxed agent may need the sandbox off for that one command.
 
 Look at every image and check:
 
@@ -175,8 +175,8 @@ Deliver the file plus the one-line caption.
 ## Export
 
 ```
-python3 scripts/export_media.py <file>          # 1200px MP4 cropped to the board
-python3 scripts/export_media.py <file> --gif    # add a GIF (autoplays and loops in a README)
+bash scripts/export.sh <file>          # 1200px MP4 cropped to the board
+bash scripts/export.sh <file> --gif    # add a GIF (autoplays and loops in a README)
 ```
 
 GitHub renders MP4 attachments as a click-to-play player. A GIF via `<img>` autoplays and loops.

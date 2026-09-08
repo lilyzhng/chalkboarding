@@ -91,9 +91,9 @@ The skill will:
 ### Export a Demo Video or GIF
 
 ```bash
-python3 scripts/export_media.py my_chalk.html                          # 1200px MP4, cropped to the board
-python3 scripts/export_media.py my_chalk.html --seconds 10             # match the figure's own length
-python3 scripts/export_media.py toggle_chalk.html --click "#mRelax@4"  # click a control mid-clip
+bash scripts/export.sh my_chalk.html                          # 1200px MP4, cropped to the board
+bash scripts/export.sh my_chalk.html --seconds 10             # match the figure's own length
+bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"  # click a control mid-clip
 ```
 
 Add `--gif` if you need a GIF.
@@ -118,8 +118,9 @@ python3 scripts/trace_bitmap.py kangaroo.png --size 32   # prints the X/. bitmap
 | `chalkboard.css` | The template's base CSS as a standalone file | When pasting into an existing page |
 | `fonts/` | The chalk face and the three-layer discontinuity system | Phase 2 (build) |
 | `scripts/trace_bitmap.py` | Image to pixel-grid bitmap | Phase 2, for complex imagery |
-| `scripts/screenshot_beats.py` | Start / mid / end QA screenshots | Phase 3 (QA) |
-| `scripts/export_media.py` | Crisp MP4 export, cropped to the board | Sharing |
+| `scripts/qa.sh` | Start / mid / end QA screenshots. Installs its own Playwright on first run | Phase 3 (QA) |
+| `scripts/export.sh` | Crisp MP4 (and GIF) export, cropped to the board. Needs ffmpeg | Sharing |
+| `scripts/screenshot_beats.py`, `scripts/export_media.py` | The Python behind the two wrappers, if you already have Playwright | |
 
 ## Requirements
 

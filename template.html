@@ -25,6 +25,17 @@ body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
 /* opened directly (not in an iframe): center the board in the window */
 body.standalone{min-height:calc(100vh / 0.8);display:flex;align-items:center;justify-content:center;padding:24px 12px}
 body.standalone .wrap{width:100%}
+/* dirty slate: eraser smears + dust clouds, strength by data-chalk */
+.slate{overflow:hidden}
+.slate::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;
+  background:
+    repeating-linear-gradient(-22deg, rgba(245,244,239,0) 0 38px, rgba(245,244,239,.07) 38px 52px, rgba(245,244,239,0) 52px 90px),
+    repeating-linear-gradient(-28deg, rgba(245,244,239,0) 0 61px, rgba(245,244,239,.05) 61px 79px, rgba(245,244,239,0) 79px 140px),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='600'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.98  0 0 0 0.9 -0.62'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>");
+  background-size:auto,auto,900px 600px;mix-blend-mode:screen}
+.slate[data-chalk="rough"]::before{opacity:.35}
+.slate[data-chalk="shaky"]::before{opacity:.55}
+.slate > *{position:relative;z-index:1}
 .board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
 .slate{
   position:relative;font-family:'PencilPete',cursive;
@@ -88,9 +99,17 @@ body.standalone .wrap{width:100%}
   <filter id="slip1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
   <filter id="slip2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter>
   <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
-  <!-- chalk grain: noise-masked alpha, long strokes break into small gaps. slope set by data-chalk.
-       userSpaceOnUse so zero-width straight lines keep a filter region -->
-  <filter id="grain" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000"><feTurbulence type="fractalNoise" baseFrequency="0.32" numOctaves="2" seed="5" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/><feComponentTransfer in="g" result="mask"><feFuncA id="grainA" type="linear" slope="1" intercept="0"/></feComponentTransfer><feComposite in="SourceGraphic" in2="mask" operator="in"/></filter>
+  <!-- chalk dust: heavier stroke, patchy along its length, soft halo around it. slope/blur set by data-chalk -->
+  <filter id="dust" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000">
+    <feMorphology in="SourceGraphic" operator="dilate" radius="0.6" result="fat"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.12 0.35" numOctaves="2" seed="7" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/>
+    <feComponentTransfer in="g" result="mask"><feFuncA id="dustA" type="linear" slope="2.4" intercept="-0.25"/></feComponentTransfer>
+    <feComposite in="fat" in2="mask" operator="in" result="patchy"/>
+    <feGaussianBlur in="patchy" stdDeviation="1.6" result="halo"/>
+    <feComponentTransfer in="halo" result="halo2"><feFuncA type="linear" slope="0.28"/></feComponentTransfer>
+    <feMerge><feMergeNode in="halo2"/><feMergeNode in="patchy"/></feMerge>
+  </filter>
   <!-- chalk fade: a long stroke thins toward its end as the hand lifts -->
   <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F5F4EF" stop-opacity="1"/><stop offset=".4" stop-color="#F5F4EF" stop-opacity=".85"/><stop offset="1" stop-color="#F5F4EF" stop-opacity=".22"/></linearGradient>
 </svg>
@@ -174,26 +193,33 @@ body.standalone .wrap{width:100%}
   // hand-drawn slips: long strokes are harder to draw straight, so the longer
   // the element, the more likely (and eventually certain) a waver somewhere.
   // chalkiness preset from <div class="slate" data-chalk="tidy|rough|shaky">
-  // scale: slip filter strength. grain: alpha slope/intercept of the noise mask (lower intercept = more gaps).
+  // scale: slip filter strength. dust: patchiness of the stroke mask (lower intercept = more gaps) + halo blur.
   // fadeOver: SVG paths longer than this (px) get the fading stroke; 0 = never.
-  // breaks: fraction of SVG paths that get random dash gaps. jitter: max stroke-width multiplier spread.
-  // geo: per-shape geometry wobble. radius: circle size spread, gap: closed shapes stop short of meeting (fraction of
-  // perimeter), rot: max per-shape tilt in degrees.
+  // weight: stroke-width multiplier. jitter: extra per-path width spread. breaks: fraction of paths with dash gaps.
+  // geo: circle radius spread, closed shapes stop short (fraction), per-shape tilt (deg).
   var CHALK = {
-    tidy:  { scale: 1,   grain: {slope: 1.6, intercept: 0.45},  fadeOver: 0,   breaks: 0,    jitter: 0,   geo: null,                              pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
-    rough: { scale: 4.6, grain: {slope: 3.6, intercept: -0.55}, fadeOver: 50,  breaks: 0.8,  jitter: 1.2, geo: {radius: 0.2, gap: 0.05, rot: 2},  pClean: function(w){ return 0; } },
-    shaky: { scale: 6.5, grain: {slope: 3.8, intercept: -0.6},  fadeOver: 40,  breaks: 0.95, jitter: 1.6, geo: {radius: 0.45, gap: 0.13, rot: 5}, pClean: function(w){ return 0; } }
+    tidy:  { scale: 1,   dust: null,                                   fadeOver: 0,  weight: 1,   jitter: 0,   breaks: 0,   geo: null,                              pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
+    rough: { scale: 3,   dust: {slope: 2.4, intercept: -0.25, blur: 1.2}, fadeOver: 80, weight: 1.35, jitter: 0.6, breaks: 0.4, geo: {radius: 0.2, gap: 0.05, rot: 2},  pClean: function(w){ return 0; } },
+    shaky: { scale: 5,   dust: {slope: 2.8, intercept: -0.45, blur: 1.6}, fadeOver: 40, weight: 1.6, jitter: 1.1, breaks: 0.8, geo: {radius: 0.45, gap: 0.13, rot: 5}, pClean: function(w){ return 0; } }
   };
   var slate = document.querySelector('.slate');
   var preset = CHALK[(slate && slate.getAttribute('data-chalk')) || 'tidy'] || CHALK.tidy;
   document.querySelectorAll('feDisplacementMap').forEach(function(m){
     m.setAttribute('scale', (parseFloat(m.getAttribute('scale')) * preset.scale).toFixed(2));
   });
-  var grainA = document.getElementById('grainA');
-  if (grainA && preset.grain){
-    grainA.setAttribute('slope', preset.grain.slope); grainA.setAttribute('intercept', preset.grain.intercept);
+  var dustA = document.getElementById('dustA');
+  if (dustA && preset.dust){
+    dustA.setAttribute('slope', preset.dust.slope); dustA.setAttribute('intercept', preset.dust.intercept);
+    var blur = document.querySelector('#dust feGaussianBlur'); if (blur) blur.setAttribute('stdDeviation', preset.dust.blur);
     document.querySelectorAll('.slate svg path, .slate svg circle, .slate svg rect').forEach(function(n){
-      if (!n.closest('.replay')) n.style.filter = 'url(#grain)';
+      if (!n.closest('.replay')) n.style.filter = 'url(#dust)';
+    });
+  }
+  if (preset.weight !== 1){
+    document.querySelectorAll('.slate svg path, .slate svg circle, .slate svg rect').forEach(function(n){
+      if (n.closest('.replay')) return;
+      var sw = parseFloat(getComputedStyle(n).strokeWidth) || 2;
+      n.style.strokeWidth = (sw * preset.weight).toFixed(2);
     });
   }
   if (preset.breaks || preset.jitter){

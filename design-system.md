@@ -148,17 +148,13 @@ One attribute on the slate sets all three imperfection systems at once:
 <div class="slate" data-chalk="tidy">   <!-- tidy | rough | shaky -->
 ```
 
-| Preset | Slip scale | `--tilt` | Grain | Dash breaks | Width jitter | Fade | Geometry | Reads as |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| tidy (default) | 1x | 1 | light dust | none | none | none | none | a careful teacher |
-| rough | 4.6x | 3.6 | heavy gaps | 80% of paths | ±60% | paths over 50px | circles ±20%, closed shapes stop 5% short, each shape tilts ±2° | end of a long day |
-| shaky | 6.5x | 5 | heavier | 95% of paths | ±80% | paths over 40px | circles ±45%, closed shapes stop 13% short, each shape tilts ±5° | a first-day teacher |
+| Preset | Slate | Stroke | Slip / tilt | Breaks + fade | Geometry | Reads as |
+| --- | --- | --- | --- | --- | --- | --- |
+| tidy (default) | clean | thin, light dust | 1x / 1 | none | none | a careful teacher |
+| rough | faint eraser wipe streaks | 1.35x heavier, patchy along the length, soft dust halo | 3x / 3.6 | 40% of paths broken, fade over 80px | circles ±20%, closed shapes stop 5% short, ±2° per shape | end of a long day |
+| shaky | stronger streaks | 1.6x heavier, patchier, wider halo | 5x / 5 | 80% broken, fade over 40px | circles ±45%, closed shapes stop 13% short, ±5° per shape | a first-day teacher |
 
-Eight imperfection systems, one attribute. The geometry layer (`geo`) edits the shapes themselves: circle radius and center nudge, a `pathLength="1"` dash so closed shapes never quite meet, and a per-shape CSS rotate around its own center. Grain is `#grain`, a noise-masked alpha
-filter applied to every SVG stroke on the slate (`filterUnits="userSpaceOnUse"`,
-because a perfectly straight line has a zero-width bounding box and would
-otherwise vanish). Fade is `#fade`, a horizontal gradient stroke applied to
-paths whose `getTotalLength()` exceeds the preset's threshold.
+One attribute, four layers. The slate layer is a `.slate::before` pseudo-element (diagonal wipe streaks plus a faint dust cloud, `mix-blend-mode:screen`, opacity per preset). The stroke layer is the `#dust` filter: dilate, mask with fractal noise so the line is patchy like real chalk, then a blurred low-alpha copy merged underneath as the halo. Breaks, fade, and geometry edit the paths themselves. What was tried and rejected: a ghost copy of the drawing behind itself (reads as a double exposure, not an old lesson) and a heavy grey cloud (reads as fog). Keep the slate subtle; the stroke carries the chalk.
 
 Grain noise is `baseFrequency="0.32"`. Anything much finer is sub-pixel at figure
 size and reads as nothing, which is how the first rough preset shipped invisible.

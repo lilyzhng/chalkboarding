@@ -42,7 +42,7 @@ All wired into `template.html`. Full spec in `design-system.md`.
 | Chalk ink | `#F5F4EF`, secondary `rgba(245,244,239,.55)`, nothing dimmer |
 | Font | `PencilPete.ttf` for everything on the slate, relative `url("PencilPete.ttf")`, copied next to the output |
 | Hand-drawn waver | SVG turbulence filters `#slip1..3` applied probabilistically by the end-of-body script; longer element = more likely to waver |
-| Chalkiness | `data-chalk="tidy\|rough\|shaky"` on `.slate`, from question 4. One attribute sets slip strength, `--tilt`, stroke grain, dash breaks, stroke-width jitter, long-stroke fade, and shape geometry (circle size, unclosed corners, per-shape tilt). Never hand-tune per figure |
+| Chalkiness | `data-chalk="tidy\|rough\|shaky"` on `.slate`, from question 4. One attribute sets slate wipe streaks, chalk stroke weight and dust halo, slip and tilt, dash breaks, fade, and shape geometry. Never hand-tune per figure; never add a ghost overlay or a grey cloud |
 | Micro-imperfection | alternating rotations ±0.25° to 1.4°, irregular radii like `10px 8px 11px 7px` |
 | Animation | one `paint(t)`, beat constants at the top, single rAF loop, eraser replay button, freeze on final frame |
 | Fixed heights | status, tally, badge lines use `height` + `line-height` + `nowrap`, never `min-height`; board height never changes mid-play |

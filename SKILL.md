@@ -11,66 +11,87 @@ description: >
 # Chalkboard figures
 
 One self-contained HTML file that looks like a hand-drawn chalkboard and plays
-like a lecture: elements appear in narrative order, a status line says where
-you are, an eraser button replays. It embeds in a page via iframe, prints as
-the final frame, and exports to MP4.
+like a lecture. Embeds via iframe, prints as the final frame, exports to MP4.
 
-## Principle: divide and conquer
+## Core Principles
 
-Never conceive and render in the same step. Split every hard visual goal into
-a structure step and a manifestation step:
+1. **Divide and conquer.** Never conceive and render in the same step. Every hard visual goal splits into a structure step and a manifestation step. When something feels too hard to produce directly, find the split.
+2. **Ask before drawing.** One native questionnaire before any mock, a second one to approve the mock. Even when the user handed you a description.
+3. **One idea per figure.** A teacher's board, not a dashboard. More than ~2 panels or ~3 beats per panel means two figures.
+4. **Be fun.** Great teachers reach for silly, concrete, everyday examples. An emoji can be the character and carry the data. Abstract boxes-and-arrows is the fallback, not the default.
+5. **The board shows, the caption tells.** No verdicts, morals, sources, or explanatory prose on the slate. Deliver a one-line caption separately.
+6. **Idempotent `paint(t)`.** One function renders any moment from scratch. Replay, reduced motion, and print all fall out for free.
+7. **Trace, don't freehand.** You have weak spatial intuition. Get shapes from references, then render them in chalk.
 
-- the ASCII mock separates *what the figure says* from *how it looks*
-- tracing separates *the shape* from *the drawing of it*
-- `paint(t)` separates *the story's beats* from *the rendering of any moment*
+The three splits behind principle 1:
 
-When part of a figure feels too hard to produce directly, don't push harder,
-find the split.
+| Split | Structure | Manifestation |
+| --- | --- | --- |
+| ASCII mock | what the figure says | how it looks |
+| Tracing | the shape | the drawing of it |
+| `paint(t)` | the story's beats | the rendering of any moment |
 
-## Phase 0: intake (one questionnaire, always)
+## Design Rules (NON-NEGOTIABLE)
 
-Before drawing anything, run ONE intake questionnaire. Use the native
-structured multiple-choice UI if the environment has one (in Claude Code that
-is the AskUserQuestion tool, with all three questions in a single call);
-otherwise ask all three in one concise message with lettered options. Run it
-even when the user handed you a description or a sketch up front: pre-fill
-the recommended option from what they gave and mark it "(Recommended)", but
-still ask. Do not propose a mock or any graphics before the answers are in.
+All wired into `template.html`. Full spec in `design-system.md`.
 
-1. **What is the idea?** (header "Idea"). Offer 2-3 candidate one-line
-   read-backs of the paragraph or sentence they pasted, e.g. "the one thing
-   this figure says is ___". Each option is a different emphasis (mechanism,
-   payoff, contrast). They pick one or type their own.
-2. **What does it look like?** (header "Layout"). Options:
+| Rule | Value |
+| --- | --- |
+| Frame | wood `#7A5230` |
+| Slate | deep green `#12291d` with faint radial chalk-dust lighting |
+| Chalk ink | `#F5F4EF`, secondary `rgba(245,244,239,.55)`, nothing dimmer |
+| Font | `PencilPete.ttf` for everything on the slate, relative `url("PencilPete.ttf")`, copied next to the output |
+| Hand-drawn waver | SVG turbulence filters `#slip1..3` applied probabilistically by the end-of-body script; longer element = more likely to waver |
+| Micro-imperfection | alternating rotations ±0.25° to 1.4°, irregular radii like `10px 8px 11px 7px` |
+| Animation | one `paint(t)`, beat constants at the top, single rAF loop, eraser replay button, freeze on final frame |
+| Fixed heights | status, tally, badge lines use `height` + `line-height` + `nowrap`, never `min-height`; board height never changes mid-play |
+| Embedding | `background:transparent` on body, `html{zoom:0.8}`, `postHeight()` posting `{chalkHeight, chalkSrc}` verbatim |
+| File name | `<topic>_chalk.html`, append `-v2`, `-v3` when iterating |
 
-   A. Line chart: curves on axes, where a crossing or a gap is the point
-   B. Two-panel contrast: same input, two methods, side by side
-   C. Step-by-step walkthrough: one beat at a time
-   D. Architecture diagram: labeled components and what flows between them
+Gotchas:
 
-   Write each option's description in terms of THEIR figure, not generic
-   text. "Other" is where they describe it in their own words.
-3. **How does it move?** (header "Motion"). Plays itself once (default),
-   buttons the reader toggles, or a slider the reader drags.
+- Every new visual class goes into the slip script's selector list.
+- SVG `<text>` is not covered by the script. Put `filter:url(#slip1)` on the SVG element directly.
+- Never accumulate state inside the rAF tick. Build DOM once, reveal in `paint`.
 
-Then go to Phase 1. If one of the figures in `examples/` happens to share the
-shape they described, you may open it in Phase 2 as a starting point, but do
-not go looking for the closest one, and never bend their picture to fit ours.
+## Board Content Rules
 
-Do not skip phase 1 for anything non-trivial, layout
-mistakes are 10x cheaper to fix in ASCII than in styled HTML.
+| On the slate | Off the slate (caption) |
+| --- | --- |
+| names, numbers, one-line status | verdict or moral ("the price is ...") |
+| the character and its data | source or attribution ("after X, 'title'") |
+| done badges, beat labels | prose that explains the figure |
 
-## Phase 1: ASCII mock
+One wink per figure (a venue in-joke, a deadpan verdict line). Seasoning, not the meal.
 
-Turn the idea into an ASCII wireframe in the conversation, at roughly the real
-aspect ratio (figures are ~940px wide). Show:
+---
 
-- every panel/box/row with its border and label
+## Phase 0: Intake Questionnaire
+
+Run ONE questionnaire with all three questions in a single call. Use the native structured UI (AskUserQuestion in Claude Code); otherwise one message with lettered options. Pre-fill the recommended option from anything the user gave and mark it "(Recommended)". Do not propose a mock or graphics before the answers are in.
+
+| # | Header | Question | Options |
+| --- | --- | --- | --- |
+| 1 | Idea | What is the one thing this figure says? | 2-3 one-line read-backs of their text, each a different emphasis (mechanism / payoff / contrast) |
+| 2 | Layout | What does it look like? | A. Line chart: a crossing or gap is the point. B. Two-panel contrast: same input, two methods. C. Step-by-step walkthrough: one beat at a time. D. Architecture diagram: components and flows |
+| 3 | Motion | How does it move? | Plays itself once (default) / buttons the reader toggles / slider the reader drags |
+
+Write each layout option in terms of THEIR figure, not generic text. "Other" is where they describe it in their own words.
+
+If a figure in `examples/` shares the shape they chose, you may open it in Phase 2 as a starting point. Do not go looking for the closest one, and never bend their picture to fit ours.
+
+## Phase 1: ASCII Mock
+
+Layout mistakes are 10x cheaper to fix in ASCII than in styled HTML. Never skip this for anything non-trivial.
+
+Before drawing boxes, ask: what's the everyday story here, and who's the character? Rejection sampling is "The best pet is a ___" with a cat and a dog. Parallel denoising is painting a kangaroo. Path selection is racing to school.
+
+The mock shows, at roughly the real aspect ratio (~940px wide):
+
+- every panel, box, and row with its border and label
 - placeholder text where real labels go
-- the replay button position (bottom-right)
-- an **animation beat table** under the mock: what appears at which second
-
-Example mock:
+- the replay button, bottom-right
+- a **beat table** underneath: what appears at which second
 
 ```
 +--------------------------------------------------------------+
@@ -92,127 +113,70 @@ Beats: t=0 start · t=1.65 chunk 1 · t=3.3 chunk 2 + done badge
        t=10 vanilla done · t=11.5 freeze (loop end)
 ```
 
-Conventions: `:` dashed panel borders, `[x]` chips, `(...)` grouped chunks,
-`=` filled / `-` unfilled progress. Annotate anything that moves with `<-`.
+| Symbol | Meaning |
+| --- | --- |
+| `:` | dashed panel border |
+| `[x]` | chip |
+| `(...)` | grouped chunk |
+| `=` / `-` | filled / unfilled progress |
+| `<-` | annotation on anything that moves |
 
-Then approve the mock with a SECOND questionnaire (same native UI). One
-question, header "Mock": approve as drawn (Recommended) / one or two concrete
-layout alternatives you can see (e.g. flat grids vs a 3D slab, stacked vs side
-by side) / "change beats or labels" where they say what to change via Other.
-Iterate until they approve the layout and the story beats. If the
-user is not available (a batch run, an unattended agent), write the mock and
-beat table to `<topic>_mock.md` next to the output and proceed as if approved,
-so there is still a contract to check the figure against. The mock
-is the contract: the number of panels, the reading order, and the beat table
-carry over 1:1 into phase 2.
+**Approve with a SECOND questionnaire.** One question, header "Mock":
 
-While mocking, push for **one idea per figure**. A chalkboard reads like a
-teacher's board, not a dashboard, if the mock needs more than ~2 panels or
-~3 beats-per-panel to make its point, suggest splitting into two figures.
+- Approve as drawn (Recommended)
+- One or two concrete layout alternatives you can see (flat grids vs 3D slab, stacked vs side by side)
+- Change beats or labels (they say what via Other)
 
-And push to **be fun**. The style works because it feels like a great teacher
-at a board, and great teachers reach for silly, concrete, everyday examples:
-rejection sampling is "The best pet is a ___" with a cat and a dog, parallel
-denoising is painting a kangaroo, path selection is racing to school. So at
-mock time, before drawing boxes, ask: *what's the everyday story here, and
-who's the character?* An emoji can be the character, and can carry data
-(a 🐕 that literally grows as its probability share grows beats a bar chart).
-Small winks are welcome (a venue in-joke, a deadpan verdict line like "the
-best pet becomes a dog"), one per figure; it's seasoning, not the meal.
-Abstract boxes-and-arrows is the fallback, not the default.
+Iterate until approved. The mock is the contract: panel count, reading order, and beat table carry 1:1 into Phase 2. If no user is available (batch run, unattended agent), write the mock and beat table to `<topic>_mock.md` next to the output and proceed as if approved.
 
-**What never goes on the board:** a verdict or moral sentence ("the price is
-..."), a source or attribution line ("after X, 'title'"), or any prose that
-explains the figure. The board shows the thing; the figure caption in the host
-page says what it means and where it came from. Every figure you deliver
-should come with a one-line caption for that purpose, written separately.
-Labels on the slate stay short and concrete: names, numbers, one-line status.
+## Phase 2: Build the HTML
 
-## Phase 2: convert to chalkboard HTML
+Read in this order:
 
-Start from `template.html` (a complete working skeleton) and read
-`design-system.md` for the visual language: exact colors, board
-construction, the chalky font, and the hand-drawn discontinuity system.
-For animation recipes (chips, progress fills, playheads, SVG curve draw-on,
-pixel grids), read `animation-patterns.md`. Before building,
-skim `worked-examples.md` and open the example figure closest to
-what you're making, it records regeneration prompts, mocks, and the
-implementation tricks (bitmap tracing, declarative `data-t` beats,
-hand-drawn SVG pictograms) that the finished files don't explain.
+| File | For |
+| --- | --- |
+| `template.html` | the working skeleton to start from |
+| `design-system.md` | exact colors, board construction, font, waver system |
+| `animation-patterns.md` | recipes: chips, progress fills, playheads, SVG draw-on, pixel grids, sliders |
+| `worked-examples.md` | prompts, mocks, and tricks behind the richest examples |
 
-The non-negotiables that make the style read as "chalkboard", all already
-wired in the template:
-
-1. **Board**: wooden frame `#7A5230` wrapping a deep-green slate `#12291d`
-   with faint radial "chalk dust" lighting. Chalk ink is `#F5F4EF`,
-   secondary ink `rgba(245,244,239,.55)`.
-2. **Chalky font**: `PencilPete.ttf` for everything on the slate, loaded via
-   `@font-face` with a relative `url("PencilPete.ttf")`, copy the font from
-   this repo's `fonts/` (or reuse one already in the project) so it sits
-   next to the output HTML.
-3. **Discontinuity (hand-drawn feel)**: three SVG turbulence filters
-   (`#slip1..3`) plus the standard end-of-body script that applies them
-   probabilistically, the longer an element, the more likely it wavers,
-   exactly like real handwriting. Add every new visual class to that
-   script's selector list (SVG `<text>` is not covered by it: put
-   `filter:url(#slip1)` on the SVG element directly). Complement with small alternating rotations
-   (±0.25°–1.4°) and irregular border-radii like `10px 8px 11px 7px`.
-4. **Animation model**: one idempotent `paint(t)` function, beat times as
-   named constants at the top of the script, a single rAF loop, and the
-   eraser replay button. Never accumulate state per frame, `paint(t)` must
-   render any `t` from scratch so replay, reduced-motion (jump to final
-   frame), and `beforeprint` (paint final frame) all fall out for free.
-5. **Embedding contract**: `background: transparent` on body, `html{zoom:0.8}`,
-   and the `postHeight()` snippet that posts `{chalkHeight, chalkSrc}` to the
-   parent, this is how host pages size the iframe. Keep it verbatim.
+Open the example closest to the approved mock as a starting point.
 
 ### Complex imagery: trace, don't freehand
 
-You (a coding model) have weak spatial intuition: freehanding a recognizable
-kangaroo or an opera house from imagined coordinates produces mush. Don't
-try. Split drawing into **trace** (get the shape from a reference) and
-**render** (fill it in chalk):
+Freehanding a kangaroo or an opera house from imagined coordinates produces mush. Split into **trace** (shape from a reference) and **render** (fill in chalk).
 
-- If you're unsure what the concept even looks like, first find one or two
-  reference images (web search) and study them, that's how the diffusion
-  analogy figure locked in "left: paint pixel by pixel, right: denoise all
-  at once" before any drawing happened.
-- For pixel-grid subjects, trace a real image instead of inventing cells:
-  `python3 scripts/trace_bitmap.py <image> --size 32` converts any PNG (an
-  emoji from the Twemoji repo, a logo, a silhouette) into the `X`/`.` bitmap
-  array the pixel-grid recipe consumes. The kangaroo was traced from the
-  Twemoji kangaroo's alpha channel this way.
-- For SVG pictograms, same principle at lower fidelity: describe the pose in
-  a handful of landmark points taken from a reference (head circle, spine
-  line, limb angles), then connect them with round-capped strokes, trace
-  the skeleton, not the outline.
+| Subject | Method |
+| --- | --- |
+| Unclear concept | find 1-2 reference images first, study them, then draw |
+| Pixel grid | `python3 scripts/trace_bitmap.py <image> --size 32` turns any PNG (Twemoji emoji, logo, silhouette) into the `X`/`.` bitmap the grid recipe consumes |
+| SVG pictogram | take a handful of landmark points from a reference (head circle, spine, limb angles), connect with round-capped strokes. Trace the skeleton, not the outline |
+| Trivial geometry | freehand is fine: stick figures, arrows, boxes, simple charts |
 
-Freehand is fine only for things with trivial geometry: stick figures,
-arrows, boxes, simple charts.
+## Phase 3: QA Before Delivering
 
-Name the file `<topic>_chalk.html` (append `-v2`, `-v3` when iterating so old
-versions stay comparable).
+```
+python3 scripts/screenshot_beats.py <file> --beats <start>,<mid>,<end> --replay
+```
 
-## Phase 3: QA before delivering
+Pick the three beats from your own beat table: just after t=0, right after the key beat, past your `END` constant. The defaults `0.3,3,12.5` fit a 10-12s figure, not yours. Needs `pip install playwright && playwright install chromium`; a sandboxed agent may need the sandbox off for that one command.
 
-Screenshot the figure with `python3 scripts/screenshot_beats.py <file> --beats
-<start>,<mid>,<end>` and actually look at the images. Pick the three beats from
-your own beat table: start just after t=0, mid right after the key beat, end
-past your `END` constant (the defaults `0.3,3,12.5` fit a 10-12s figure, not
-yours). Add `--replay` to also click the eraser and shoot the reset. Needs
-Python `playwright` with Chromium (`pip install playwright && playwright
-install chromium`); in a sandboxed agent, headless Chromium may need the
-sandbox off for that one command. Check:
+Look at every image and check:
 
-- nothing overflows the slate; chips wrap instead of clipping
-- the board height is identical at t=0 and at END (reserve space for every
-  late-appearing line with fixed heights; measure both screenshots)
-- the final frame is self-sufficient, a reader who only ever sees the frozen
-  frame (print, reduced motion) still gets the full message, including
-  every label and the "done" state
-- text contrast: primary chalk on board, secondary at .55 alpha, nothing dimmer
-- the chalky waver is visible on long strokes but labels stay legible
-- replay actually resets everything (the `--replay` shot must match the start shot)
+- [ ] nothing overflows the slate; chips wrap instead of clipping
+- [ ] board height identical at t=0 and at END (measure both screenshots)
+- [ ] final frame is self-sufficient: print and reduced-motion readers get every label and the done state
+- [ ] contrast: primary chalk, secondary at .55 alpha, nothing dimmer
+- [ ] waver visible on long strokes, labels still legible
+- [ ] the `--replay` shot matches the start shot
 
-Sharing it afterwards: `python3 scripts/export_media.py <file>` renders a
-crisp MP4 cropped to the board.
+Deliver the file plus the one-line caption.
+
+## Export
+
+```
+python3 scripts/export_media.py <file>          # 1200px MP4 cropped to the board
+python3 scripts/export_media.py <file> --gif    # add a GIF (autoplays and loops in a README)
+```
+
+GitHub renders MP4 attachments as a click-to-play player. A GIF via `<img>` autoplays and loops.

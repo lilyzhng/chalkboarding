@@ -1,0 +1,73 @@
+/* chalkboard.css — the base design system extracted verbatim from template.html.
+   Figures ship as single self-contained HTML files, so template.html inlines this;
+   this copy exists for agents that need to paste the system into an existing page
+   or diff a figure's CSS against the canonical one. Font file must sit next to the HTML. */
+@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}
+:root{
+  /* falls back gracefully when standalone; inherits the site's tokens when embedded */
+  --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
+  --_ink: var(--ink, #2A2A26);
+  --chalk:#F5F4EF;
+  --chalk-dim:rgba(245,244,239,.55);
+  --board:#12291d;
+  --frame:#7A5230;
+}
+*{box-sizing:border-box}
+html{zoom:0.8}
+body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
+.wrap{max-width:940px;margin:0 auto}
+.board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
+.slate{
+  position:relative;font-family:'PencilPete',cursive;
+  border-radius:10px;padding:30px 34px 52px;color:var(--chalk);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 15%, rgba(255,255,255,0.03), transparent 60%),
+    var(--board);
+}
+.replay{position:absolute;bottom:18px;right:28px;z-index:2;display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:0}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{
+  width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);
+}
+.replay:hover .eraser{filter:brightness(1.08)}
+.replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
+.panel{
+  border:1.5px dashed rgba(245,244,239,.45);border-radius:12px;
+  padding:16px 18px;margin-bottom:18px;
+}
+.panel:last-child{margin-bottom:0}
+.panel.a{transform:rotate(-0.3deg)}
+.panelhead{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.panelname{color:var(--chalk);font-size:1.5rem;font-weight:700;letter-spacing:.18em}
+.donebadge{
+  color:var(--chalk);font-size:1.15rem;margin-left:auto;
+  border:1.5px solid currentColor;border-radius:50px;
+  padding:2px 11px;opacity:0;transition:opacity .3s;transform:rotate(1.2deg);
+}
+.chips{display:flex;gap:8px;flex-wrap:wrap;min-height:42px}
+.chip{
+  border:1.7px solid rgba(245,244,239,.75);
+  border-radius:10px 8px 11px 7px;
+  padding:5px 14px;font-size:1.35rem;font-weight:700;
+  color:var(--chalk);background:rgba(245,244,239,.05);
+  opacity:0;transition:opacity .3s;
+}
+.chip:nth-child(odd){transform:rotate(-1.1deg)}
+.chip:nth-child(even){transform:rotate(0.9deg)}
+.chip.show{opacity:1}
+.trackwrap{position:relative;height:9px;margin-top:12px}
+.trackbase{position:absolute;inset:3px 0;border-bottom:2px dotted rgba(245,244,239,.28)}
+.fill{
+  position:absolute;left:0;top:0;bottom:0;width:0;border-radius:4px;
+  background:repeating-linear-gradient(90deg,rgba(245,244,239,.85) 0 6px,rgba(245,244,239,.45) 6px 9px);
+}
+.status{font-size:1.15rem;color:var(--chalk-dim);margin-top:9px;min-height:22px}
+@media(max-width:640px){.slate{padding:20px 16px 46px}}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+  .chip,.panel,.donebadge{transform:none!important}
+}

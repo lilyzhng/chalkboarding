@@ -86,12 +86,12 @@ Abstract boxes-and-arrows is the fallback, not the default.
 
 ## Phase 2 — convert to chalkboard HTML
 
-Start from `assets/template.html` (a complete working skeleton) and read
-`references/design-system.md` for the visual language: exact colors, board
+Start from `template.html` (a complete working skeleton) and read
+`design-system.md` for the visual language: exact colors, board
 construction, the chalky font, and the hand-drawn discontinuity system.
 For animation recipes (chips, progress fills, playheads, SVG curve draw-on,
-pixel grids), read `references/animation-patterns.md`. Before building,
-skim `references/worked-examples.md` and open the example figure closest to
+pixel grids), read `animation-patterns.md`. Before building,
+skim `worked-examples.md` and open the example figure closest to
 what you're making — it records regeneration prompts, mocks, and the
 implementation tricks (bitmap tracing, declarative `data-t` beats,
 hand-drawn SVG pictograms) that the finished files don't explain.
@@ -104,7 +104,7 @@ wired in the template:
    secondary ink `rgba(245,244,239,.55)`.
 2. **Chalky font**: `PencilPete.ttf` for everything on the slate, loaded via
    `@font-face` with a relative `url("PencilPete.ttf")` — copy the font from
-   this skill's `assets/` (or reuse one already in the project) so it sits
+   this repo's `fonts/` (or reuse one already in the project) so it sits
    next to the output HTML.
 3. **Discontinuity (hand-drawn feel)**: three SVG turbulence filters
    (`#slip1..3`) plus the standard end-of-body script that applies them
@@ -162,4 +162,4 @@ mid-animation beat, and after the loop ends, and actually look at the images:
 - replay actually resets everything (click it in the Playwright session)
 
 A quick screenshot harness is described at the end of
-`references/animation-patterns.md`.
+`animation-patterns.md`.

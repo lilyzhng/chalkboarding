@@ -61,12 +61,10 @@ and chalky board is part of the look.
 ```
 
 - `PencilPete.ttf` sits **next to the output HTML** (relative URL — keeps the
-  figure portable and iframe-friendly). Copy it from this skill's `assets/`.
+  figure portable and iframe-friendly). Copy it from this repo's `fonts/`.
 - Everything inside `.slate` inherits `'PencilPete',cursive`.
 - The font runs small: body-ish text is `1.15–1.35rem`, panel titles `1.3–1.5rem`
   bold with `letter-spacing:.08em–.18em` (chalk capitals are written spaced out).
-- `assets/ChalkBoard.ttf` is an alternative display face for big headline
-  lettering; PencilPete is the default workhorse.
 
 ## Discontinuity: the hand-drawn system
 

@@ -100,22 +100,10 @@ of clock time. Same idempotency rule.
 
 ## QA screenshot harness
 
-Playwright + the preinstalled Chromium; capture beats by faking the clock via
-paint if exposed, or simply waiting:
+`python3 scripts/screenshot_beats.py my_chalk.html` writes start / mid / end
+PNGs (defaults 0.3s, 3s, 12.5s; override with `--beats`). Look at all three
+before delivering. The `end` shot is what print and reduced-motion readers
+get, so it must tell the whole story alone.
 
-```js
-const { chromium } = require('playwright-core');
-(async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const p = await b.newPage({ viewport: { width: 980, height: 900 } });
-  await p.goto('file://' + process.argv[2]);
-  for (const [name, ms] of [['start', 300], ['mid', 3000], ['end', 12500]]) {
-    await p.waitForTimeout(name === 'start' ? ms : ms - 300);
-    await p.screenshot({ path: `shot_${name}.png`, fullPage: true });
-  }
-  await b.close();
-})();
-```
-
-Look at all three images before delivering. The `end` shot is what print and
-reduced-motion readers get — it must tell the whole story alone.
+To share the animation itself, `python3 scripts/export_media.py my_chalk.html`
+records it and writes an MP4 and a GIF cropped to the board.

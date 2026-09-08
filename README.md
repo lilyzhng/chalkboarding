@@ -90,7 +90,7 @@ The skill will:
 4. Convert the mock into chalkboard HTML from `template.html` using the design system
 5. Screenshot start, mid, and final frames and check that the final frame carries the whole message alone
 
-### Export for Twitter or a README
+### Export a Demo Video or GIF
 
 ```bash
 ./chalkboarding my_chalk.html                          # 1200px MP4, cropped to the board

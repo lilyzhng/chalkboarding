@@ -87,6 +87,13 @@ Small winks are welcome (a venue in-joke, a deadpan verdict line like "the
 best pet becomes a dog") — one per figure; it's seasoning, not the meal.
 Abstract boxes-and-arrows is the fallback, not the default.
 
+**What never goes on the board:** a verdict or moral sentence ("the price is
+..."), a source or attribution line ("after X, 'title'"), or any prose that
+explains the figure. The board shows the thing; the figure caption in the host
+page says what it means and where it came from. Every figure you deliver
+should come with a one-line caption for that purpose, written separately.
+Labels on the slate stay short and concrete: names, numbers, one-line status.
+
 ## Phase 2 — convert to chalkboard HTML
 
 Start from `template.html` (a complete working skeleton) and read

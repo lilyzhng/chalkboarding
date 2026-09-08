@@ -1,60 +1,47 @@
 # Chalkboarding
 
-A coding-agent skill for animated chalkboard figures: a green slate in a wooden frame, hand-drawn chalk lettering with a deliberately wobbly stroke, and elements that animate onto the board like a lecture unfolding. Built for the NeurIPS 2026 education tutorial [*Speculative Decoding: How It Evolved, When It Stays Lossless, and What's Next*](https://neurips2026-speculative-decoding.vercel.app/). The core `SKILL.md` can be read by any coding agent with filesystem and shell access.
-
-## What This Does
-
-**Chalkboarding** turns an idea into a figure that looks like a teacher drew it on a chalkboard, and animates it as if you were sitting in the class: things appear in the order the teacher would draw them, and an eraser button replays the lesson. One HTML file, no dependencies. Embed it in a page, print the final frame for a paper, or export an MP4 for Twitter.
+A coding-agent skill that turns an idea into a figure that looks like a teacher drew it on a chalkboard, and animates it as if you were sitting in the class: things appear in the order the teacher would draw them, and an eraser button replays the lesson. One HTML file, no dependencies. Embed it in a page, print the final frame for a paper, or export an MP4 for Twitter.
 
 The trick is to never think and draw in the same step. Sketch the layout in ASCII first, trace shapes instead of freehanding them, then render.
+
+Built for the NeurIPS 2026 education tutorial [*Speculative Decoding: How It Evolved, When It Stays Lossless, and What's Next*](https://neurips2026-speculative-decoding.vercel.app/). Works with any coding agent that can read files and run a shell.
 
 ## Examples
 
 Four figures from the [tutorial](https://neurips2026-speculative-decoding.vercel.app/). Every one is a single HTML file; the videos were rendered with `scripts/export_media.py` and the source MP4s are in `examples/media/`.
 
-### The kangaroo: paint pixel by pixel vs denoise all at once
+### Figure 1. Kangaroo: painting an image sequentially vs in parallel
 
 https://github.com/user-attachments/assets/d4eff0ee-45d7-4bdc-b8d8-57984cc0f88f
 
-Two 32x32 canvases paint the same kangaroo. The left one fills cell by cell and takes seven seconds. The right one starts as noise and converges every pixel at once in three. When it finishes, the hook lands: what about drafting tokens in parallel? The kangaroo was traced from an emoji with `scripts/trace_bitmap.py`, not drawn freehand.
+**Concept.** Two ways to generate the same image: pixel by pixel, or all pixels at once as a diffusion model does. The parallel canvas finishes first.
+**Why this figure.** It introduces the idea of drafting tokens in parallel by contrast with the sequential way everyone already knows. The kangaroo was traced from an emoji with `scripts/trace_bitmap.py`, so the task became filling a grid instead of drawing an animal.
 
-### Rejection sampling: "NeurIPS 2026 is in ___"
+### Figure 2. Rejection sampling: the target checks every draft token
 
 https://github.com/user-attachments/assets/b71646c8-2cb6-4e42-96da-a616fe2a583a
 
-The draft proposes San Diego, the target prefers Sydney. Each token shows p and q as chalk bars and the accept probability underneath. Rejected tokens get struck through and corrected. The legend explains the three symbols in one line each.
+**Concept.** The draft proposes "NeurIPS 2026 is in San Diego". For each token, the target compares its probability p with the draft's q and accepts with probability min(1, p/q). "San Diego" is rejected and corrected to "Sydney"; everything after it is discarded.
+**Why this figure.** This is the rule that makes speculative decoding lossless, and it is easiest to believe when you watch it run on one sentence with the numbers visible.
 
-### Drafting cost vs block size
+### Figure 3. Drafting cost vs block size
 
 https://github.com/user-attachments/assets/7f75ebc7-65be-41d9-b850-fd208a1d1d23
 
-A chalk chart that draws itself as the block size slider sweeps from 1 to 16. EAGLE-3's cost climbs one layer-pass per token; DFlash stays flat at five. The break-even point is circled where the lines cross, and the verdict line under the chart updates with the slider.
+**Concept.** How much a drafter costs to propose a block of γ tokens. An autoregressive drafter (EAGLE-3) pays one layer-pass per token, a diagonal. A parallel drafter (DFlash) pays a flat five. The lines cross at the break-even block size.
+**Why this figure.** A chart that draws itself as the slider sweeps from 1 to 16, then stays draggable, so the reader can find the break-even point with their own hand.
 
-### Go to school: independent top-1 vs path selection
+### Figure 4. Go to school: independent top-1 vs path selection
 
 https://github.com/user-attachments/assets/a6be0baa-2bb7-4260-9b30-df08cc7472aa
 
-Same verified prefix, "The fastest way to ___ ___ ___ ___", drafted two ways. On the left each position picks its own top token alone and the neighbors collide into "get to to school". On the right adjacent positions are scored together and one coherent path wins: "get to school quickly". A stick figure, a fence, and a schoolhouse are drawn on as SVG strokes, and the acceptance curve under each panel shows why the tail sags on one side and lifts on the other.
+**Concept.** Same prefix, "The fastest way to ___ ___ ___ ___", drafted two ways. When each position picks its own top token, neighbors collide into "get to to school". When adjacent positions are scored together, one coherent path wins: "get to school quickly".
+**Why this figure.** It shows why parallel drafts lose acceptance at later positions and how path selection fixes it, with a walker stuck at a barrier and a runner reaching the school as the two outcomes.
 
-All eight figures live in `examples/`, with an MP4 of each in `examples/media/`. Open any of them directly in a browser; they load the font from `../fonts/`.
-
-| Figure | Idea |
-|---|---|
-| `example1_kangaroo.html` | Paint pixel by pixel vs denoise all at once |
-| `example2_dog_and_cat.html` | "The best pet is a ___", strict vs relaxed verification, emoji sized by probability |
-| `example3_rejection_sampling.html` | Rejection sampling with p, q, and accept bars per token |
-| `example4_go_to_school.html` | Independent top-1 vs path selection, SVG curve draw-on |
-| `example5_decoding_race.html` | Five decoders on the same sentence |
-| `example6_twin_timelines.html` | Twin timeline panels with chips, chunks, and a playhead |
-| `example7_dflash_flat_cost.html` | Drafting cost vs block size, interactive slider |
-| `example8_dflash_kv_injection.html` | KV injection, many labeled SVG panels |
-
-`worked-examples.md` records, for the richest ones, the regeneration prompt, the ASCII mock it implies, and the implementation tricks the finished files don't explain.
+Four more live in `examples/`, each with an MP4 in `examples/media/`: dog and cat (strict vs relaxed verification), the decoding race, twin timelines, and KV injection. `worked-examples.md` records the prompt, the ASCII mock, and the implementation tricks for the richest ones.
 
 ### Key Features
 
-- **Zero Dependencies** — Single HTML files with inline CSS/JS. Open them in a browser, embed them in a page, print them.
-- **ASCII Mock First** — Layout and animation beats are sketched as an ASCII wireframe in chat and iterated cheaply before any styled HTML exists.
 - **The Chalk Hand** — One font plus three layers of imperfection: SVG turbulence filters applied with probability that grows with stroke length, alternating micro-rotations, irregular corner radii. Everything that makes text read as hand-drawn lives in `fonts/`.
 - **Trace, Don't Freehand** — Coding models have weak spatial sense. `scripts/trace_bitmap.py` turns any image (an emoji, a logo, a silhouette) into the pixel bitmap a figure consumes. The kangaroo was traced from the Twemoji kangaroo's alpha channel.
 - **Replay, Reduced Motion, Print** — One `paint(t)` function renders any moment from scratch, so the eraser button, `prefers-reduced-motion`, and `beforeprint` all fall out for free.
@@ -80,14 +67,7 @@ Agents such as Codex, Kimi Code, OpenCode, Gemini CLI, or any local coding assis
 https://github.com/lilyzhng/chalkboarding
 ```
 
-If the agent can read GitHub repos or browse files, it should start from `SKILL.md` and load only the referenced support files it needs:
-
-- `design-system.md`
-- `animation-patterns.md`
-- `worked-examples.md`
-- `template.html`
-- `fonts/`
-- `scripts/`
+If the agent can read GitHub repos or browse files, it should start from `SKILL.md` and load the support files it references only when needed (see [Architecture](#architecture)).
 
 Some agents can also install the skill for you if they have filesystem access and a known local skills directory. If not, they can follow `SKILL.md` directly for the current session. Whatever the agent, the one file that must be copied is `fonts/PencilPete.ttf`: it goes next to every generated figure.
 
@@ -104,7 +84,7 @@ Some agents can also install the skill for you if they have filesystem access an
 
 The skill will:
 
-1. Ask what the one idea is, and who the character is
+1. Ask three questions, one at a time: paste the idea, pick the shape (line chart, two-panel contrast, step-by-step walkthrough, architecture diagram, help me decide, or chat with me), and how it moves (plays itself, toggle, slider)
 2. Sketch an ASCII mock with an animation beat table, and iterate until you approve it
 3. Trace any complex imagery from a reference instead of freehanding it
 4. Convert the mock into chalkboard HTML from `template.html` using the design system

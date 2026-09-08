@@ -27,7 +27,37 @@ shape* from *the drawing of it*; `paint(t)` separates *the story's beats*
 from *the rendering of any moment*. Whenever part of a figure feels too hard
 to produce directly, don't push harder — find the split.
 
-Three phases, in order: mock, build, QA. Do not skip phase 1 for anything non-trivial — layout
+## Phase 0 — intake (three questions, one at a time)
+
+Before drawing anything, ask these in order and wait for each answer. One
+question per message; do not bundle them. The goal is to learn what the user
+sees in their head, not to pick one of our examples.
+
+1. **What is the idea?** Ask the user to paste the paragraph, figure caption,
+   or sentence the figure should teach. Read it back in one line: "So the one
+   thing this figure says is ___." Fix that line until they agree.
+2. **What does it look like?** Offer these five and let them answer with a
+   letter, a mix, or their own words:
+
+   A. Line chart: curves on axes, where a crossing or a gap is the point
+   B. Two-panel contrast: same input, two methods, side by side
+   C. Step-by-step walkthrough: one beat at a time
+   D. Architecture diagram: labeled components and what flows between them
+   E. Help me decide
+   F. Chat with me: ___
+
+   On E, propose one from the idea in one sentence and wait for a yes. On F,
+   they fill in the blank in their own words.
+3. **How does it move?** Plays itself once (default), buttons the reader
+   toggles, or a slider the reader drags.
+
+Then go to Phase 1. If one of the figures in `examples/` happens to share the
+shape they described, you may open it in Phase 2 as a starting point, but do
+not go looking for the closest one, and never bend their picture to fit ours.
+If the user gave all of this up front, skip the questions and just state the
+read-back line.
+
+Do not skip phase 1 for anything non-trivial — layout
 mistakes are 10x cheaper to fix in ASCII than in styled HTML.
 
 ## Phase 1 — ASCII mock

@@ -210,3 +210,17 @@ bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click a control
 ```
 
 Then tell the user the output path and size, and that redoing the export overwrites the same file.
+
+### Voice-over (optional, macOS)
+
+A figure is silent by default. To turn it into a narrated explainer, declare
+spoken lines against the figure's beats and export with `--narrate`:
+
+```bash
+bash scripts/export.sh <file> --narrate --voice "Serena (Premium)"
+```
+
+Narration is placed at absolute timestamps (the video stays authoritative, so
+it never drifts out of sync). Off unless asked for; **macOS `say` only for
+now**, with a pluggable seam for other TTS backends. Full format and timing
+rules in `narration.md`.

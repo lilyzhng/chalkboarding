@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the internet works — a click's journey</title>
+<style>@font-face{font-family:"PencilPete";src:url("../fonts/PencilPete.ttf") format("truetype");}</style>
+<style>
+:root{
+  --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
+  --chalk:#F5F4EF;
+  --chalk-dim:rgba(245,244,239,.6);
+  --chalk-faint:rgba(245,244,239,.32);
+  --board:#12291d;
+  --frame:#7A5230;
+  --tilt:1;
+  --amber:#F2C879;
+}
+*{box-sizing:border-box}
+html{zoom:0.8}
+body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
+.wrap{max-width:940px;margin:0 auto}
+body.standalone{min-height:calc(100vh / 0.8);display:flex;align-items:center;justify-content:center;padding:24px 12px}
+body.standalone .wrap{width:100%}
+.slate{overflow:hidden}
+.slate::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'><filter id='a'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.98  0 0 0 1.4 -0.75'/></filter><rect width='100%25' height='100%25' filter='url(%23a)'/></svg>");
+  background-size:1200px 800px;mix-blend-mode:screen}
+.slate > *{position:relative;z-index:1}
+.board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
+.slate{
+  position:relative;font-family:'PencilPete',cursive;
+  border-radius:10px;padding:22px 30px 50px;color:var(--chalk);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 55% 15%, rgba(255,255,255,0.03), transparent 60%),
+    var(--board);
+}
+.title{font-size:1.5rem;letter-spacing:.05em;text-align:center;color:var(--chalk);margin:2px 0 4px}
+.title .q{color:var(--chalk-dim)}
+.scene{display:block;width:100%;height:auto}
+.status{font-size:1.2rem;color:var(--chalk-dim);text-align:center;height:26px;line-height:26px;white-space:nowrap;overflow:hidden;margin-top:2px}
+
+/* svg primitives */
+.scene .stroke{fill:none;stroke:var(--chalk);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.scene .dim{stroke:var(--chalk-dim)}
+.scene .fillc{fill:var(--chalk)}
+.scene .amber{stroke:var(--amber)}
+.scene .lbl{font-family:'PencilPete',cursive;fill:var(--chalk-dim);font-size:19px;text-anchor:middle}
+.scene .lbl.big{fill:var(--chalk);font-size:22px}
+.scene .lbl.amber{fill:var(--amber)}
+.scene .wv{filter:url(#slip1)}
+
+.path{fill:none;stroke:rgba(245,244,239,.45);stroke-width:2.6;stroke-linecap:round;
+  stroke-dasharray:var(--len);stroke-dashoffset:var(--len);transition:stroke-dashoffset 1.8s ease}
+.path.draw{stroke-dashoffset:0}
+
+.el{opacity:0;transition:opacity .5s}
+.el.show{opacity:1}
+
+.donebadge{opacity:0;transition:opacity .4s}
+.donebadge.show{opacity:1}
+
+.replay{position:absolute;bottom:16px;right:26px;z-index:2;display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:0}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7)}
+.replay:hover .eraser{filter:brightness(1.08)}
+.replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<script>if(window.self===window.top)document.documentElement.classList.add("standalone"),document.body.classList.add("standalone");</script>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="slip1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+<div class="wrap">
+  <div class="board"><div class="slate" data-chalk="tidy">
+    <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
+
+    <div class="title">how a click travels <span class="q">the internet</span></div>
+
+    <svg class="scene" viewBox="0 0 900 470" aria-label="a click's journey across the internet and back">
+
+      <!-- ===== paths ===== -->
+      <path id="pout" class="path" d="M150,196 L150,132 Q150,120 164,120 L720,120 Q812,120 815,180 L815,232"/>
+      <path id="pret" class="path" d="M818,300 L818,386 Q818,398 804,398 L196,398 Q182,398 179,386 L168,322"/>
+
+      <!-- ===== KID + TABLET (left) ===== -->
+      <g class="el wv" data-t="0.3">
+        <!-- stick kid -->
+        <circle class="stroke" cx="52" cy="212" r="12"/>
+        <path class="stroke" d="M52,224 L52,262"/>
+        <path class="stroke" d="M52,232 L34,244 M52,232 L74,238"/>
+        <path class="stroke" d="M52,262 L40,296 M52,262 L66,296"/>
+        <!-- tablet -->
+        <rect class="stroke" x="86" y="196" width="78" height="104" rx="9"/>
+        <!-- play triangle (idle) -->
+        <g id="playtri"><path class="stroke amber" d="M112,226 L112,264 L142,245 Z"/></g>
+        <text class="lbl" x="122" y="330">you tap play</text>
+      </g>
+
+      <!-- ===== ROUTER ===== -->
+      <g class="el wv" data-t="7">
+        <rect class="stroke" x="262" y="102" width="66" height="34" rx="5"/>
+        <circle class="fillc" cx="278" cy="119" r="2.4"/>
+        <circle class="fillc" cx="290" cy="119" r="2.4"/>
+        <!-- antennas -->
+        <path class="stroke" d="M300,102 L306,84 M314,102 L320,86"/>
+        <!-- wifi arcs -->
+        <path class="stroke dim" d="M300,150 Q295,142 288,140 M304,156 Q296,146 285,144"/>
+        <text class="lbl" x="295" y="172">home router</text>
+      </g>
+
+      <!-- ===== ISP ===== -->
+      <g class="el wv" data-t="15">
+        <rect class="stroke" x="446" y="86" width="58" height="50" rx="3"/>
+        <path class="stroke" d="M457,98 L466,98 M484,98 L493,98 M457,112 L466,112 M484,112 L493,112 M457,126 L466,126 M484,126 L493,126"/>
+        <text class="lbl" x="475" y="160">the ISP</text>
+        <text class="lbl" x="475" y="180" style="font-size:15px">(internet company)</text>
+      </g>
+
+      <!-- ===== THE INTERNET (web of computers) ===== -->
+      <g class="el wv" data-t="23">
+        <circle class="fillc" cx="614" cy="96" r="3"/>
+        <circle class="fillc" cx="656" cy="80" r="3"/>
+        <circle class="fillc" cx="694" cy="100" r="3"/>
+        <circle class="fillc" cx="640" cy="122" r="3"/>
+        <circle class="fillc" cx="686" cy="130" r="3"/>
+        <circle class="fillc" cx="616" cy="132" r="3"/>
+        <path class="stroke dim" d="M614,96 L656,80 L694,100 L686,130 L640,122 Z M656,80 L640,122 M614,96 L616,132 L640,122 M694,100 L686,130 M616,132 L686,130"/>
+        <text class="lbl" x="652" y="168">the internet</text>
+        <text class="lbl" x="652" y="188" style="font-size:15px">millions of computers</text>
+      </g>
+
+      <!-- ===== SERVER (far right) ===== -->
+      <g class="el wv" data-t="31">
+        <rect class="stroke" x="792" y="238" width="60" height="20" rx="3"/>
+        <rect class="stroke" x="792" y="262" width="60" height="20" rx="3"/>
+        <rect class="stroke" x="792" y="286" width="60" height="20" rx="3"/>
+        <circle class="fillc" cx="802" cy="248" r="2.3"/>
+        <circle class="fillc" cx="802" cy="272" r="2.3"/>
+        <circle class="fillc" cx="802" cy="296" r="2.3"/>
+        <!-- tiny cat on top -->
+        <g class="amber" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="822" cy="220" r="9"/>
+          <path d="M815,213 L812,205 L820,211 M829,213 L832,205 L824,211"/>
+          <path d="M818,220 L810,219 M818,223 L811,224 M826,220 L834,219 M826,223 L833,224"/>
+        </g>
+        <text class="lbl big amber" x="822" y="336">the cat video</text>
+        <text class="lbl amber" x="822" y="356" style="font-size:16px">lives here!</text>
+      </g>
+
+      <!-- ===== moving CLICK envelope (outbound) ===== -->
+      <g id="env" class="wv" opacity="0">
+        <rect class="stroke amber" x="-16" y="-11" width="32" height="22" rx="3"/>
+        <path class="stroke amber" d="M-16,-9 L0,3 L16,-9"/>
+      </g>
+
+      <!-- ===== return PACKETS ===== -->
+      <g id="packets"></g>
+
+      <!-- reassembled label -->
+      <text id="lineuplbl" class="lbl amber el" data-t="0" x="256" y="432" style="font-size:16px">back in order → rebuilt!</text>
+
+      <!-- done badge -->
+      <g id="done" class="donebadge">
+        <text class="lbl big amber" x="450" y="452">…all in about 1 second!</text>
+      </g>
+    </svg>
+
+    <div class="status" id="status"></div>
+  </div></div>
+</div>
+
+<script>
+(function(){
+  var END = 60;
+  // beat reveals via data-t on .el
+  var timed = Array.prototype.slice.call(document.querySelectorAll('.el[data-t]'))
+    .map(function(el){ return { el: el, t: parseFloat(el.dataset.t) }; });
+
+  // path lengths for draw-on
+  var pout = document.getElementById('pout');
+  var pret = document.getElementById('pret');
+  pout.style.setProperty('--len', pout.getTotalLength());
+  pret.style.setProperty('--len', pret.getTotalLength());
+
+  var env = document.getElementById('env');
+  var status = document.getElementById('status');
+  var done = document.getElementById('done');
+  var playtri = document.getElementById('playtri');
+  var lineuplbl = document.getElementById('lineuplbl');
+
+  // ---- build 4 return packets ----
+  var NS = 'http://www.w3.org/2000/svg';
+  var slots = [ {x:196,y:398}, {x:236,y:398}, {x:276,y:398}, {x:316,y:398} ];
+  var packets = [];
+  var host = document.getElementById('packets');
+  for (var i=0;i<4;i++){
+    var g = document.createElementNS(NS,'g');
+    g.setAttribute('class','wv'); g.setAttribute('opacity','0');
+    var r = document.createElementNS(NS,'rect');
+    r.setAttribute('class','stroke amber');
+    r.setAttribute('x',-15); r.setAttribute('y',-13); r.setAttribute('width',30); r.setAttribute('height',26); r.setAttribute('rx',4);
+    var tx = document.createElementNS(NS,'text');
+    tx.setAttribute('class','lbl amber'); tx.setAttribute('x',0); tx.setAttribute('y',6);
+    tx.setAttribute('style','font-size:16px'); tx.textContent = (i+1);
+    g.appendChild(r); g.appendChild(tx); host.appendChild(g);
+    packets.push(g);
+  }
+
+  // ---- outbound waypoints (t, x, y) ----
+  var OUT = [
+    {t:7,    x:150, y:196},   // at tablet
+    {t:13,   x:295, y:120},   // router
+    {t:21,   x:475, y:120},   // ISP
+    {t:29,   x:652, y:120},   // internet
+    {t:36.5, x:815, y:250}    // server
+  ];
+  function lerp(a,b,u){ return a+(b-a)*u; }
+  function envPos(t){
+    if (t <= OUT[0].t) return {x:OUT[0].x, y:OUT[0].y};
+    for (var i=0;i<OUT.length-1;i++){
+      if (t <= OUT[i+1].t){
+        var u=(t-OUT[i].t)/(OUT[i+1].t-OUT[i].t);
+        return {x:lerp(OUT[i].x,OUT[i+1].x,u), y:lerp(OUT[i].y,OUT[i+1].y,u)};
+      }
+    }
+    return {x:OUT[OUT.length-1].x, y:OUT[OUT.length-1].y};
+  }
+
+  // packet motion: leave server, arrive at its slot
+  function packetPos(i, t){
+    var start = {x:748, y:250 + i*16};   // fanned stack, just left of the server
+    var depart = 46 + i*0.4, arrive = 50 + i*0.9;
+    if (t <= depart) return start;
+    if (t >= arrive) return slots[i];
+    var u=(t-depart)/(arrive-depart);
+    return {x:lerp(start.x, slots[i].x, u), y:lerp(start.y, slots[i].y, u)};
+  }
+
+  var STATUS = [
+    {t:0,  s:'you tap play on a video…'},
+    {t:7,  s:'1) off to your home router'},
+    {t:15, s:'2) the ISP passes it along'},
+    {t:23, s:'3) across the internet — computer to computer'},
+    {t:31, s:'4) found it! the video lives on a server'},
+    {t:38, s:'5) the video is chopped into little packets'},
+    {t:46, s:'6) packets race back to you'},
+    {t:53, s:'7) they line up in order and rebuild the video'},
+    {t:58, s:'▶ and the video plays!'}
+  ];
+  function statusAt(t){ var s=STATUS[0].s; for (var i=0;i<STATUS.length;i++){ if (t>=STATUS[i].t) s=STATUS[i].s; } return s; }
+
+  function paint(t){
+    timed.forEach(function(o){ o.el.classList.toggle('show', t >= o.t); });
+    pout.classList.toggle('draw', t >= 1.0);
+    pret.classList.toggle('draw', t >= 38);
+
+    // outbound envelope: visible while travelling, gone once it becomes packets
+    var showEnv = t >= 6.5 && t < 38;
+    env.setAttribute('opacity', showEnv ? '1' : '0');
+    if (showEnv){ var p=envPos(t); env.setAttribute('transform','translate('+p.x.toFixed(1)+','+p.y.toFixed(1)+')'); }
+
+    // packets appear at the server as it splits, then travel home
+    packets.forEach(function(g,i){
+      var vis = t >= 38 + i*0.4;
+      g.setAttribute('opacity', vis ? '1' : '0');
+      if (vis){ var q=packetPos(i,t); g.setAttribute('transform','translate('+q.x.toFixed(1)+','+q.y.toFixed(1)+')'); }
+    });
+    lineuplbl.classList.toggle('show', t >= 54);
+
+    // the video plays: swap play-triangle for a little cat in the tablet
+    if (t >= 56){ playtri.setAttribute('opacity','0'); showCat(true); }
+    else { playtri.setAttribute('opacity','1'); showCat(false); }
+
+    done.classList.toggle('show', t >= 58);
+    status.textContent = statusAt(t);
+  }
+
+  // a tiny cat drawn inside the tablet, revealed when the video plays
+  var cat=null;
+  function showCat(on){
+    if (on && !cat){
+      cat=document.createElementNS(NS,'g');
+      cat.setAttribute('class','wv');
+      cat.setAttribute('stroke','var(--amber)'); cat.setAttribute('fill','none');
+      cat.setAttribute('stroke-width','2'); cat.setAttribute('stroke-linecap','round'); cat.setAttribute('stroke-linejoin','round');
+      cat.innerHTML='<circle cx="125" cy="240" r="16"/>'+
+        '<path d="M113,229 L108,216 L121,226 M137,229 L142,216 L129,226"/>'+
+        '<path d="M118,240 L104,238 M118,245 L105,247 M132,240 L146,238 M132,245 L145,247"/>'+
+        '<circle cx="120" cy="238" r="1.6" fill="var(--amber)"/><circle cx="130" cy="238" r="1.6" fill="var(--amber)"/>';
+      env.parentNode.appendChild(cat);
+    }
+    if (cat) cat.setAttribute('opacity', on ? '1' : '0');
+  }
+
+  var replay = document.getElementById('replay');
+  var t0 = performance.now(), raf = null;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function tick(){
+    var t=(performance.now()-t0)/1000;
+    if (t>=END){ paint(END); raf=null; return; }
+    paint(t); raf=requestAnimationFrame(tick);
+  }
+  function play(){
+    if (raf) cancelAnimationFrame(raf);
+    if (reduced){ paint(END); return; }
+    t0=performance.now(); paint(0); raf=requestAnimationFrame(tick);
+  }
+  replay.addEventListener('click', play);
+  play();
+
+  window.addEventListener('beforeprint', function(){
+    try{ if(raf) cancelAnimationFrame(raf);}catch(e){}
+    try{ paint(END);}catch(e){}
+  });
+  if (location.search.indexOf('final')!==-1) setTimeout(function(){
+    try{ if(raf) cancelAnimationFrame(raf);}catch(e){} try{ paint(END);}catch(e){}
+  },300);
+
+  function postHeight(){
+    parent.postMessage({chalkHeight:Math.ceil(document.body.getBoundingClientRect().height),
+      chalkSrc:location.pathname.split('/').pop()}, '*');
+  }
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(postHeight);
+  setTimeout(postHeight, 1500);
+})();
+</script>
+<script type="application/vo+json" id="vo">
+[ {"t":0,"text":"Ever wonder what happens when you tap play on a cat video? Let's follow your click!"},
+  {"t":7,"text":"First, your tap turns into a tiny message, and it zips off to your home router."},
+  {"t":15,"text":"The router passes it to your I S P, the company that connects your home to the internet."},
+  {"t":23,"text":"Now it travels across the internet, millions of computers passing it along."},
+  {"t":31,"text":"Until it reaches a special computer far away, a server, where the cat video lives!"},
+  {"t":38,"text":"The server chops the video into little numbered pieces called packets."},
+  {"t":46,"text":"The packets race all the way back to you, sometimes taking different roads."},
+  {"t":53,"text":"They arrive, line up in order, and rebuild your video."},
+  {"t":57.3,"text":"And it plays, all in about one second!"} ]
+</script>
+</body>
+</html>

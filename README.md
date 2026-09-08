@@ -110,7 +110,7 @@ The draft proposes San Diego, the target prefers Sydney. Each token shows p and 
 
 Five decoders write the same sentence on a shared time axis. Vanilla places one chip per second. Each speculative decoder places a chunk per verification pass, so the lanes finish at different times and the acceptance length is visible as chunk width.
 
-All eight figures live in `examples/`. Open any of them directly in a browser; the font file sits next to them.
+All eight figures live in `examples/`. Open any of them directly in a browser; they load the font from `../fonts/`.
 
 | Figure | Idea |
 |---|---|

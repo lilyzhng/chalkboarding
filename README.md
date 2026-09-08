@@ -150,7 +150,7 @@ All eight figures live in `examples/`. Open any of them directly in a browser; t
 
 ## Credits
 
-Created by [@lily_gpupoor](https://x.com/lily_gpupoor). Structure borrowed from [frontend-slides](https://github.com/zarazhangrui/frontend-slides).
+Created by [@lily_gpupoor](https://x.com/lily_gpupoor) and [@Madisonkanna](https://x.com/Madisonkanna).
 
 ## License
 

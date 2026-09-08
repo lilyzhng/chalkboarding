@@ -172,11 +172,22 @@ Look at every image and check:
 
 Deliver the file plus the one-line caption.
 
-## Export
+## Phase 4: Share & Export
 
-```
-bash scripts/export.sh <file>          # 1200px MP4 cropped to the board
-bash scripts/export.sh <file> --gif    # add a GIF (autoplays and loops in a README)
+After delivering the file and caption, ask with the native questionnaire (header "Export"):
+
+- MP4 (Recommended): crisp, for X, slides, and GitHub attachments (click to play)
+- GIF: softer and larger, but autoplays and loops in a README `<img>`
+- Both
+- No thanks
+
+If they decline, stop. Otherwise run the wrapper. It installs Playwright by itself on first run and needs ffmpeg (`brew install ffmpeg`).
+
+```bash
+bash scripts/export.sh <file>                 # <file>.mp4 next to the input
+bash scripts/export.sh <file> --gif           # also <file>.gif
+bash scripts/export.sh <file> --seconds 9     # match the figure's END constant
+bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click a control mid-clip
 ```
 
-GitHub renders MP4 attachments as a click-to-play player. A GIF via `<img>` autoplays and loops.
+Then tell the user the output path and size, and that redoing the export overwrites the same file.

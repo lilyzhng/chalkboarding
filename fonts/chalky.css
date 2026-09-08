@@ -3,14 +3,18 @@
 @font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}
 
 /* everything on the slate is chalk */
-.slate{font-family:'PencilPete',cursive}
+.slate{font-family:'PencilPete',cursive;position:relative;overflow:hidden;--tilt:1}
+
+/* chalkiness preset: <div class="slate" data-chalk="tidy|rough|shaky">. --tilt multiplies every rotation below */
+.slate[data-chalk="rough"]{--tilt:3.6}
+.slate[data-chalk="shaky"]{--tilt:5}
 
 /* alternating micro-rotations: containers a little, badges more, chips most */
-.panel.v{transform:rotate(-0.3deg)}
-.panel.s{transform:rotate(0.25deg)}
-.donebadge{transform:rotate(1.3deg)}
-.chip:nth-child(odd){transform:rotate(-1.1deg)}
-.chip:nth-child(even){transform:rotate(0.9deg)}
+.panel.v{transform:rotate(calc(-0.3deg * var(--tilt)))}
+.panel.s{transform:rotate(calc(0.25deg * var(--tilt)))}
+.donebadge{transform:rotate(calc(1.3deg * var(--tilt)))}
+.chip:nth-child(odd){transform:rotate(calc(-1.1deg * var(--tilt)))}
+.chip:nth-child(even){transform:rotate(calc(0.9deg * var(--tilt)))}
 
 /* irregular corner radii: four different values, always */
 .panel{border-radius:10px 8px 11px 7px;border:1.5px dashed rgba(245,244,239,.45)}
@@ -19,6 +23,17 @@
 /* dashed and dotted beat solid; chalk fills are streaky, not flat */
 .trackbase{border-top:2px dotted rgba(245,244,239,.3)}
 .fill{background:repeating-linear-gradient(90deg, rgba(245,244,239,.85) 0 6px, rgba(245,244,239,.45) 6px 9px)}
+
+/* dirty slate: random eraser wipes, two anisotropic noise layers (one rotated), strength by data-chalk */
+.slate{overflow:hidden}
+.slate::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'><filter id='a'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.98  0 0 0 1.4 -0.75'/></filter><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='0.0012 0.05' numOctaves='2' seed='29'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.98  0 0 0 1.1 -0.82'/></filter><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='0.001 0.04' numOctaves='2' seed='53'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.98  0 0 0 1.0 -0.8'/></filter><rect width='100%25' height='100%25' filter='url(%23a)'/><rect x='-600' y='-400' width='2400' height='1600' transform='rotate(-14 600 400)' filter='url(%23b)' opacity='0.6'/><rect x='-600' y='-400' width='2400' height='1600' transform='rotate(23 600 400)' filter='url(%23c)' opacity='0.45'/></svg>");
+  background-size:1200px 800px;mix-blend-mode:screen}
+.slate[data-chalk="rough"]::before{opacity:.2}
+.slate[data-chalk="shaky"]::before{opacity:.32}
+.slate > *{position:relative;z-index:1}
+.slate .ghost{position:absolute;inset:0;z-index:0;pointer-events:none;filter:blur(1.2px)}
 
 /* all wobble off under reduced motion */
 @media(prefers-reduced-motion:reduce){

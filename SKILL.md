@@ -47,7 +47,7 @@ All wired into `template.html`. Full spec in `design-system.md`.
 | Animation | one `paint(t)`, beat constants at the top, single rAF loop, eraser replay button, freeze on final frame |
 | Fixed heights | status, tally, badge lines use `height` + `line-height` + `nowrap`, never `min-height`; board height never changes mid-play |
 | Embedding | `background:transparent` on body, `html{zoom:0.8}`, `postHeight()` posting `{chalkHeight, chalkSrc}` verbatim. The `body.standalone` rule centers the board when the file is opened directly instead of in an iframe |
-| File name | `<topic>_chalk.html`, append `-v2`, `-v3` when iterating |
+| File name | `<topic>_chalk.html`, append `-v2`, `-v3` when iterating. A chalkiness change on an existing figure writes `<topic>_chalk-<preset>.html` beside the original, never over it, so the two can be compared |
 
 Gotchas:
 
@@ -187,6 +187,7 @@ Look at every image and check:
 - [ ] waver visible on long strokes, labels still legible
 - [ ] the `--replay` shot matches the start shot
 - [ ] emoji count is 0-2 and none repeat; every crowd is drawn in chalk
+- [ ] if the preset is not normal, a stacked normal-vs-preset screenshot shows a difference at a glance
 
 Deliver the file plus the one-line caption.
 

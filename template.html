@@ -17,7 +17,7 @@
   --tilt:1;   /* chalkiness multiplier for rotations, set by data-chalk */
 }
 .slate[data-chalk="tidy"]{--tilt:.3}
-.slate[data-chalk="rough"]{--tilt:1.7}
+.slate[data-chalk="rough"]{--tilt:2.2}
 *{box-sizing:border-box}
 html{zoom:0.8}
 body{margin:0;padding:0 0 4px;background:transparent;font-family:var(--_serif)}
@@ -90,9 +90,9 @@ body.standalone .wrap{width:100%}
   <filter id="slip3" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="17" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
   <!-- chalk grain: noise-masked alpha, long strokes break into small gaps. slope set by data-chalk.
        userSpaceOnUse so zero-width straight lines keep a filter region -->
-  <filter id="grain" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="5" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/><feComponentTransfer in="g" result="mask"><feFuncA id="grainA" type="linear" slope="1" intercept="0"/></feComponentTransfer><feComposite in="SourceGraphic" in2="mask" operator="in"/></filter>
+  <filter id="grain" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000"><feTurbulence type="fractalNoise" baseFrequency="0.32" numOctaves="2" seed="5" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/><feComponentTransfer in="g" result="mask"><feFuncA id="grainA" type="linear" slope="1" intercept="0"/></feComponentTransfer><feComposite in="SourceGraphic" in2="mask" operator="in"/></filter>
   <!-- chalk fade: a long stroke thins toward its end as the hand lifts -->
-  <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F5F4EF" stop-opacity="1"/><stop offset=".55" stop-color="#F5F4EF" stop-opacity=".9"/><stop offset="1" stop-color="#F5F4EF" stop-opacity=".4"/></linearGradient>
+  <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F5F4EF" stop-opacity="1"/><stop offset=".4" stop-color="#F5F4EF" stop-opacity=".85"/><stop offset="1" stop-color="#F5F4EF" stop-opacity=".22"/></linearGradient>
 </svg>
 <div class="wrap">
   <div class="board"><div class="slate" data-chalk="normal">
@@ -178,8 +178,8 @@ body.standalone .wrap{width:100%}
   // fadeOver: SVG paths longer than this (px) get the fading stroke; 0 = never.
   var CHALK = {
     tidy:   { scale: 0.5, grain: null,                          fadeOver: 0,   pClean: function(w){ return w < 280 ? 1 : 0.5; } },
-    normal: { scale: 1,   grain: {slope: 1.2, intercept: 0.55}, fadeOver: 0,   pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
-    rough:  { scale: 1.7, grain: {slope: 2.2, intercept: 0.05}, fadeOver: 200, pClean: function(w){ return w < 60 ? 0.4 : 0; } }
+    normal: { scale: 1,   grain: {slope: 1.6, intercept: 0.45}, fadeOver: 0,   pClean: function(w){ return w < 60 ? 0.85 : w < 160 ? 0.5 : w < 280 ? 0.15 : 0; } },
+    rough:  { scale: 2.6, grain: {slope: 3.2, intercept: -0.35}, fadeOver: 120, pClean: function(w){ return w < 60 ? 0.4 : 0; } }
   };
   var slate = document.querySelector('.slate');
   var preset = CHALK[(slate && slate.getAttribute('data-chalk')) || 'normal'] || CHALK.normal;

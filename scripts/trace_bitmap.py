@@ -5,7 +5,7 @@ Coding models have poor spatial sense: asked to draw a kangaroo freehand they
 produce mush, but given a silhouette to trace they do fine. This script is the
 "trace" step: it converts any image (an emoji PNG, a logo, a photo silhouette)
 into the X/. row-string bitmap that pixel-grid figures consume (see the ROO
-array in dflash_diffusion_analogy_chalk-v5.html).
+array in example1_kangaroo.html).
 
 Usage:
     python3 trace_bitmap.py kangaroo.png                 # 32x32, alpha channel

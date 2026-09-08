@@ -12,7 +12,7 @@ recorded in git — history was squashed through deploy commits. That's exactly
 why these recipes exist: regeneration should depend on the skill, not on
 remembering who or what drew it first.)
 
-## The kangaroo — `dflash_diffusion_analogy_chalk-v5.html`
+## The kangaroo — `example1_kangaroo.html`
 
 **Regeneration prompt:**
 
@@ -79,7 +79,7 @@ Divide and conquer, twice over: concept → composition → shape → fill. Use
   is still grinding — the time asymmetry IS the message. The hook question
   fades in tied to the right panel's completion, not the loop's end.
 
-## Go to school — `figure5_chalk.html`
+## Go to school — `example4_go_to_school.html`
 
 **Regeneration prompt:**
 
@@ -134,7 +134,7 @@ Beats: 0.5 left grid · 2.2 left result ✗ · 2.5 pictogram · 2.9 note
   shape is the quantitative punchline, annotated with a chalk
   "← tail sags" note that appears late, like a teacher circling back.
 
-## Dog and cat — `figure7_chalk.html`
+## Dog and cat — `example2_dog_and_cat.html`
 
 **Regeneration prompt:**
 
@@ -183,14 +183,14 @@ strict -> 50/50 · relax -> 20/80 + verdict swap.
 
 ## The rest, in one line each
 
-- `rejection_sampling_chalk-v1.html` — mostly-static diagram; shows the style
+- `example3_rejection_sampling.html` — mostly-static diagram; shows the style
   works without a timeline (no beats, no playhead).
-- `figure6_chalk.html` — the full decoding race: many moving chips, one shared
+- `example5_decoding_race.html` — the full decoding race: many moving chips, one shared
   time axis; the maximal version of the chips + progress pattern.
-- `dflash_flat_cost_chalk-v1.html` — slider-driven: `paint(sliderValue)`
+- `example7_dflash_flat_cost.html` — slider-driven: `paint(sliderValue)`
   instead of `paint(clockTime)`; SVG cost curves + a reading line.
-- `dflash_kv_injection_chalk-v1.html` — the multi-diagram figure: several
+- `example8_dflash_kv_injection.html` — the multi-diagram figure: several
   labeled SVG panels on one board; shows how far pure hand-drawn SVG
   (paths + text, slip-filtered) can carry an architecture explanation.
-- `figure1_chalk.html` — twin timeline panels (vanilla vs speculative), the
+- `example6_twin_timelines.html` — twin timeline panels (vanilla vs speculative), the
   canonical chips/chunks/playhead/status construction.

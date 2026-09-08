@@ -1,0 +1,27 @@
+/* chalky.css — the font face plus the geometry that refuses to be perfect.
+   Font file must sit next to the HTML that loads it. */
+@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}
+
+/* everything on the slate is chalk */
+.slate{font-family:'PencilPete',cursive}
+
+/* alternating micro-rotations: containers a little, badges more, chips most */
+.panel.v{transform:rotate(-0.3deg)}
+.panel.s{transform:rotate(0.25deg)}
+.donebadge{transform:rotate(1.3deg)}
+.chip:nth-child(odd){transform:rotate(-1.1deg)}
+.chip:nth-child(even){transform:rotate(0.9deg)}
+
+/* irregular corner radii: four different values, always */
+.panel{border-radius:10px 8px 11px 7px;border:1.5px dashed rgba(245,244,239,.45)}
+.chip{border-radius:9px 7px 10px 8px;border:1.5px solid rgba(245,244,239,.75);background:rgba(245,244,239,.05)}
+
+/* dashed and dotted beat solid; chalk fills are streaky, not flat */
+.trackbase{border-top:2px dotted rgba(245,244,239,.3)}
+.fill{background:repeating-linear-gradient(90deg, rgba(245,244,239,.85) 0 6px, rgba(245,244,239,.45) 6px 9px)}
+
+/* all wobble off under reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+  .chip,.chunk,.panel,.donebadge{transform:none!important}
+}

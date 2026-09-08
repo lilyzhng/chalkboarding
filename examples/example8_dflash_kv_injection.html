@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DFlash KV injection: every draft layer sees the full prefix</title>
-<style>@font-face{font-family:"PencilPete";src:url("../fonts/PencilPete.ttf") format("truetype");}</style>
+<style>@font-face{font-family:"PencilPete";src:url("PencilPete.ttf") format("truetype");}</style>
 <style>
 :root{
   --_serif: var(--serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif);
@@ -27,7 +27,7 @@ body.standalone .wrap{width:100%}
 .board{background:var(--frame);border-radius:16px;padding:12px;position:relative}
 .slate{
   position:relative;font-family:'PencilPete',cursive;
-  border-radius:10px;padding:30px 34px 26px;color:var(--chalk);
+  border-radius:10px;padding:30px 34px 40px;color:var(--chalk);
   background:
     radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.045), transparent 60%),
     radial-gradient(ellipse 50% 45% at 75% 70%, rgba(255,255,255,0.035), transparent 60%),
@@ -43,6 +43,24 @@ body.standalone .wrap{width:100%}
 .cmask{fill:rgba(245,244,239,.03);stroke:rgba(245,244,239,.45);stroke-width:1.5;stroke-dasharray:4 4}
 .flow{stroke:rgba(245,244,239,.7);stroke-width:1.7;fill:none}
 .flowd{stroke:rgba(245,244,239,.55);stroke-width:1.5;stroke-dasharray:6 5;fill:none}
+[data-t]{opacity:0;transition:opacity .45s ease,transform .45s ease;transform-box:fill-box;transform-origin:center;transform:translateY(4px)}
+[data-t].on{opacity:1;transform:translateY(0)}
+.replay{
+  position:absolute;bottom:12px;right:20px;z-index:2;
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;padding:0;
+}
+.replay svg{display:block;filter:url(#slip2)}
+.replay .eraser{
+  width:34px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(#e9e7e2 0%, #cfccc5 58%, #57544d 59%, #45423c 100%);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.7);
+}
+.replay:hover .eraser{filter:brightness(1.08)}
+.replay:focus-visible{outline:2px solid rgba(245,244,239,.6);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
@@ -54,130 +72,181 @@ body.standalone .wrap{width:100%}
 </svg>
 <div class="wrap">
   <div class="board"><div class="slate">
+    <button class="replay" id="replay" type="button" aria-label="replay"><svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M20.49 15 a9 9 0 1 1 -2.12 -9.36 L23 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" fill="none"/><polyline points="23 4 23 10 17 10" stroke="#F5F4EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span class="eraser"></span></button>
     <div class="diagram">
       <svg viewBox="0 0 960 560" role="img" aria-label="Diagram: verified prefix tokens pass once through the target model; its features for every position are converted to keys and values and injected into all five DFlash draft layers.">
         <text class="st" x="28" y="38" font-size="21" transform="rotate(-0.4 28 38)" filter="url(#slip3)">KV injection: every draft layer sees the full prefix</text>
 
-        <!-- verified prefix chips -->
-        <text class="sd" x="28" y="116" font-size="14">verified prefix</text>
+        <!-- verified prefix chips, one at a time, in order -->
+        <text class="sd" data-t="200" x="28" y="116" font-size="14">verified prefix</text>
         <g filter="url(#slip1)">
-          <rect class="cbox" x="28" y="132" width="96" height="30" rx="8" transform="rotate(-0.8 76 147)"/>
-          <text class="st" x="76" y="152" font-size="16" text-anchor="middle" transform="rotate(-0.8 76 147)">The</text>
-          <rect class="cbox" x="28" y="170" width="96" height="30" rx="8" transform="rotate(0.7 76 185)"/>
-          <text class="st" x="76" y="190" font-size="16" text-anchor="middle" transform="rotate(0.7 76 185)">swift</text>
-          <rect class="cbox" x="28" y="208" width="96" height="30" rx="8" transform="rotate(-0.6 76 223)"/>
-          <text class="st" x="76" y="228" font-size="16" text-anchor="middle" transform="rotate(-0.6 76 223)">brown</text>
-          <rect class="cbox" x="28" y="246" width="96" height="30" rx="8" transform="rotate(0.9 76 261)"/>
-          <text class="st" x="76" y="266" font-size="16" text-anchor="middle" transform="rotate(0.9 76 261)">fox</text>
+          <g class="el" data-t="500">
+            <rect class="cbox" x="28" y="132" width="96" height="30" rx="8" transform="rotate(-0.8 76 147)"/>
+            <text class="st" x="76" y="152" font-size="16" text-anchor="middle" transform="rotate(-0.8 76 147)">The</text>
+          </g>
+          <g class="el" data-t="800">
+            <rect class="cbox" x="28" y="170" width="96" height="30" rx="8" transform="rotate(0.7 76 185)"/>
+            <text class="st" x="76" y="190" font-size="16" text-anchor="middle" transform="rotate(0.7 76 185)">fastest</text>
+          </g>
+          <g class="el" data-t="1100">
+            <rect class="cbox" x="28" y="208" width="96" height="30" rx="8" transform="rotate(-0.6 76 223)"/>
+            <text class="st" x="76" y="228" font-size="16" text-anchor="middle" transform="rotate(-0.6 76 223)">way</text>
+          </g>
+          <g class="el" data-t="1400">
+            <rect class="cbox" x="28" y="246" width="96" height="30" rx="8" transform="rotate(0.9 76 261)"/>
+            <text class="st" x="76" y="266" font-size="16" text-anchor="middle" transform="rotate(0.9 76 261)">to</text>
+          </g>
         </g>
-        <path class="flow" filter="url(#slip3)" d="M130,205 H170 M162,199 L172,205 L162,211"/>
+        <path class="flow" data-t="1700" filter="url(#slip3)" d="M130,205 H170 M162,199 L172,205 L162,211"/>
 
         <!-- target model -->
-        <g transform="rotate(-0.5 255 205)">
-          <rect class="cboxd" x="180" y="150" width="150" height="110" rx="10" filter="url(#slip1)"/>
-          <text class="st" x="255" y="200" font-size="20" text-anchor="middle" filter="url(#slip2)">target model</text>
-          <text class="sd" x="255" y="226" font-size="14" text-anchor="middle">one forward pass</text>
+        <g class="el" data-t="1950">
+          <g transform="rotate(-0.5 255 205)">
+            <rect class="cboxd" x="180" y="150" width="150" height="110" rx="10" filter="url(#slip1)"/>
+            <text class="st" x="255" y="200" font-size="20" text-anchor="middle" filter="url(#slip2)">target model</text>
+            <text class="sd" x="255" y="226" font-size="14" text-anchor="middle">one forward pass</text>
+          </g>
         </g>
 
-        <!-- context feature chips h1..h4 -->
-        <text class="sd" x="412" y="126" font-size="13.5" text-anchor="middle">context features</text>
+        <!-- context feature chips h1..h4, one per prefix position -->
+        <text class="sd" data-t="2450" x="412" y="126" font-size="13.5" text-anchor="middle">context features</text>
         <g filter="url(#slip2)">
-          <rect class="cbox" x="390" y="140" width="44" height="26" rx="7"/>
-          <text class="st" x="412" y="158" font-size="15" text-anchor="middle">h&#8321;</text>
-          <rect class="cbox" x="390" y="176" width="44" height="26" rx="7"/>
-          <text class="st" x="412" y="194" font-size="15" text-anchor="middle">h&#8322;</text>
-          <rect class="cbox" x="390" y="212" width="44" height="26" rx="7"/>
-          <text class="st" x="412" y="230" font-size="15" text-anchor="middle">h&#8323;</text>
-          <rect class="cbox" x="390" y="248" width="44" height="26" rx="7"/>
-          <text class="st" x="412" y="266" font-size="15" text-anchor="middle">h&#8324;</text>
+          <g class="el" data-t="2550">
+            <rect class="cbox" x="390" y="140" width="44" height="26" rx="7"/>
+            <text class="st" x="412" y="158" font-size="15" text-anchor="middle">h&#8321;</text>
+          </g>
+          <g class="el" data-t="3000">
+            <rect class="cbox" x="390" y="176" width="44" height="26" rx="7"/>
+            <text class="st" x="412" y="194" font-size="15" text-anchor="middle">h&#8322;</text>
+          </g>
+          <g class="el" data-t="3450">
+            <rect class="cbox" x="390" y="212" width="44" height="26" rx="7"/>
+            <text class="st" x="412" y="230" font-size="15" text-anchor="middle">h&#8323;</text>
+          </g>
+          <g class="el" data-t="3900">
+            <rect class="cbox" x="390" y="248" width="44" height="26" rx="7"/>
+            <text class="st" x="412" y="266" font-size="15" text-anchor="middle">h&#8324;</text>
+          </g>
         </g>
-        <path class="flow" filter="url(#slip3)" d="M334,165 L384,153 M376,147 L386,153 L377,159"/>
-        <path class="flow" filter="url(#slip3)" d="M334,190 L384,189 M376,183 L386,189 L376,195"/>
-        <path class="flow" filter="url(#slip3)" d="M334,215 L384,225 M375,220 L386,225 L376,231"/>
-        <path class="flow" filter="url(#slip3)" d="M334,240 L384,261 M375,255 L386,261 L376,266"/>
+        <path class="flow" data-t="2700" filter="url(#slip3)" d="M334,165 L384,153 M376,147 L386,153 L377,159"/>
+        <path class="flow" data-t="3150" filter="url(#slip3)" d="M334,190 L384,189 M376,183 L386,189 L376,195"/>
+        <path class="flow" data-t="3600" filter="url(#slip3)" d="M334,215 L384,225 M375,220 L386,225 L376,231"/>
+        <path class="flow" data-t="4050" filter="url(#slip3)" d="M334,240 L384,261 M375,255 L386,261 L376,266"/>
 
         <!-- converter -->
-        <g transform="rotate(0.5 570 210)">
-          <rect class="cboxd" x="480" y="165" width="180" height="90" rx="10" filter="url(#slip1)"/>
-          <text class="st" x="570" y="204" font-size="18" text-anchor="middle" filter="url(#slip2)">features &rarr; K, V</text>
-          <text class="st" x="570" y="228" font-size="18" text-anchor="middle" filter="url(#slip2)">per position</text>
+        <g class="el" data-t="4300">
+          <g transform="rotate(0.5 570 210)">
+            <rect class="cboxd" x="480" y="165" width="180" height="90" rx="10" filter="url(#slip1)"/>
+            <text class="st" x="570" y="204" font-size="18" text-anchor="middle" filter="url(#slip2)">features &rarr; K, V</text>
+            <text class="st" x="570" y="228" font-size="18" text-anchor="middle" filter="url(#slip2)">per position</text>
+          </g>
         </g>
-        <path class="flow" filter="url(#slip3)" d="M438,153 L474,188 M467,182 L477,192 L466,192"/>
-        <path class="flow" filter="url(#slip3)" d="M438,189 L474,200 M465,194 L476,200 L465,206"/>
-        <path class="flow" filter="url(#slip3)" d="M438,225 L474,216 M465,222 L476,216 L466,211"/>
-        <path class="flow" filter="url(#slip3)" d="M438,261 L474,228 M465,233 L477,225 L468,222"/>
+        <path class="flow" data-t="4550" filter="url(#slip3)" d="M438,153 L474,188 M467,182 L477,192 L466,192"/>
+        <path class="flow" data-t="4750" filter="url(#slip3)" d="M438,189 L474,200 M465,194 L476,200 L465,206"/>
+        <path class="flow" data-t="4950" filter="url(#slip3)" d="M438,225 L474,216 M465,222 L476,216 L466,211"/>
+        <path class="flow" data-t="5150" filter="url(#slip3)" d="M438,261 L474,228 M465,233 L477,225 L468,222"/>
 
-        <!-- draft stack -->
-        <g filter="url(#slip1)">
-          <rect class="cbox" x="700" y="120" width="200" height="48" rx="9" transform="rotate(-0.6 800 144)"/>
-          <text class="st" x="800" y="149" font-size="17" text-anchor="middle" transform="rotate(-0.6 800 144)">draft layer 5</text>
-          <rect class="cbox" x="700" y="184" width="200" height="48" rx="9" transform="rotate(0.5 800 208)"/>
-          <text class="st" x="800" y="213" font-size="17" text-anchor="middle" transform="rotate(0.5 800 208)">draft layer 4</text>
-          <rect class="cbox" x="700" y="248" width="200" height="48" rx="9" transform="rotate(-0.4 800 272)"/>
-          <text class="st" x="800" y="277" font-size="17" text-anchor="middle" transform="rotate(-0.4 800 272)">draft layer 3</text>
-          <rect class="cbox" x="700" y="312" width="200" height="48" rx="9" transform="rotate(0.6 800 336)"/>
-          <text class="st" x="800" y="341" font-size="17" text-anchor="middle" transform="rotate(0.6 800 336)">draft layer 2</text>
-          <rect class="cbox" x="700" y="376" width="200" height="48" rx="9" transform="rotate(-0.5 800 400)"/>
-          <text class="st" x="800" y="405" font-size="17" text-anchor="middle" transform="rotate(-0.5 800 400)">draft layer 1</text>
-        </g>
-
-        <!-- KV injection fan-out, into EVERY layer -->
+        <!-- input row, enters at the top -->
         <g filter="url(#slip2)">
-          <path class="flowd" d="M660,205 Q 682,148 695,145 M687,139 L698,144 L688,151"/>
-          <path class="flowd" d="M660,208 Q 680,204 695,207 M687,201 L698,207 L687,213"/>
-          <path class="flowd" d="M660,211 Q 680,264 695,270 M686,264 L698,270 L687,276"/>
-          <path class="flowd" d="M660,214 Q 682,330 695,334 M687,328 L698,334 L688,340"/>
-          <path class="flowd" d="M660,217 Q 684,394 695,398 M687,392 L698,398 L688,404"/>
+          <g class="el" data-t="8150">
+            <rect class="cbox" x="615" y="62" width="64" height="30" rx="8" transform="rotate(0.8 647 77)"/>
+            <text class="st" x="647" y="82" font-size="15" text-anchor="middle" transform="rotate(0.8 647 77)">anchor</text>
+          </g>
+          <g class="el" data-t="8350">
+            <rect class="cmask" x="686" y="62" width="58" height="30" rx="8" transform="rotate(-0.7 715 77)"/>
+            <text class="sd" x="715" y="82" font-size="15" text-anchor="middle" transform="rotate(-0.7 715 77)">MASK</text>
+          </g>
+          <g class="el" data-t="8550">
+            <rect class="cmask" x="751" y="62" width="58" height="30" rx="8" transform="rotate(0.9 780 77)"/>
+            <text class="sd" x="780" y="82" font-size="15" text-anchor="middle" transform="rotate(0.9 780 77)">MASK</text>
+          </g>
+          <g class="el" data-t="8750">
+            <rect class="cmask" x="816" y="62" width="58" height="30" rx="8" transform="rotate(-0.8 845 77)"/>
+            <text class="sd" x="845" y="82" font-size="15" text-anchor="middle" transform="rotate(-0.8 845 77)">MASK</text>
+          </g>
+          <g class="el" data-t="8950">
+            <rect class="cmask" x="881" y="62" width="58" height="30" rx="8" transform="rotate(0.7 910 77)"/>
+            <text class="sd" x="910" y="82" font-size="15" text-anchor="middle" transform="rotate(0.7 910 77)">MASK</text>
+          </g>
+        </g>
+        <path class="flow" data-t="9150" filter="url(#slip3)" d="M800,96 V112 M794,106 L800,116 L806,106"/>
+        <text class="sd" data-t="9150" x="812" y="110" font-size="13">block in</text>
+
+        <!-- draft stack, layer 1 on top, built top down -->
+        <g filter="url(#slip1)">
+          <g class="el" data-t="5450">
+            <rect class="cbox" x="700" y="120" width="200" height="48" rx="9" transform="rotate(-0.6 800 144)"/>
+            <text class="st" x="800" y="149" font-size="17" text-anchor="middle" transform="rotate(-0.6 800 144)">draft layer 1</text>
+          </g>
+          <g class="el" data-t="5700">
+            <rect class="cbox" x="700" y="184" width="200" height="48" rx="9" transform="rotate(0.5 800 208)"/>
+            <text class="st" x="800" y="213" font-size="17" text-anchor="middle" transform="rotate(0.5 800 208)">draft layer 2</text>
+          </g>
+          <g class="el" data-t="5950">
+            <rect class="cbox" x="700" y="248" width="200" height="48" rx="9" transform="rotate(-0.4 800 272)"/>
+            <text class="st" x="800" y="277" font-size="17" text-anchor="middle" transform="rotate(-0.4 800 272)">draft layer 3</text>
+          </g>
+          <g class="el" data-t="6200">
+            <rect class="cbox" x="700" y="312" width="200" height="48" rx="9" transform="rotate(0.6 800 336)"/>
+            <text class="st" x="800" y="341" font-size="17" text-anchor="middle" transform="rotate(0.6 800 336)">draft layer 4</text>
+          </g>
+          <g class="el" data-t="6450">
+            <rect class="cbox" x="700" y="376" width="200" height="48" rx="9" transform="rotate(-0.5 800 400)"/>
+            <text class="st" x="800" y="405" font-size="17" text-anchor="middle" transform="rotate(-0.5 800 400)">draft layer 5</text>
+          </g>
+        </g>
+
+        <!-- KV injection fan-out, into EVERY layer, top down -->
+        <g filter="url(#slip2)">
+          <path class="flowd" data-t="6800" d="M660,205 Q 682,148 695,145 M687,139 L698,144 L688,151"/>
+          <path class="flowd" data-t="7050" d="M660,208 Q 680,204 695,207 M687,201 L698,207 L687,213"/>
+          <path class="flowd" data-t="7300" d="M660,211 Q 680,264 695,270 M686,264 L698,270 L687,276"/>
+          <path class="flowd" data-t="7550" d="M660,214 Q 682,330 695,334 M687,328 L698,334 L688,340"/>
+          <path class="flowd" data-t="7800" d="M660,217 Q 684,394 695,398 M687,392 L698,398 L688,404"/>
         </g>
         <g class="sd" font-size="11.5" filter="url(#slip3)">
-          <text x="672" y="132">KV</text>
-          <text x="672" y="196">KV</text>
-          <text x="672" y="254">KV</text>
-          <text x="672" y="320">KV</text>
-          <text x="672" y="384">KV</text>
+          <text data-t="6800" x="672" y="132">KV</text>
+          <text data-t="7050" x="672" y="196">KV</text>
+          <text data-t="7300" x="672" y="254">KV</text>
+          <text data-t="7550" x="672" y="320">KV</text>
+          <text data-t="7800" x="672" y="384">KV</text>
         </g>
 
-        <!-- output row, leaves the top -->
+        <!-- output row, leaves at the bottom: get to school quickly -->
         <g filter="url(#slip1)">
-          <rect class="cbox" x="700" y="62" width="40" height="30" rx="8" transform="rotate(-1 720 77)"/>
-          <text class="st" x="720" y="82" font-size="15" text-anchor="middle" transform="rotate(-1 720 77)">t1</text>
-          <rect class="cbox" x="750" y="62" width="40" height="30" rx="8" transform="rotate(0.8 770 77)"/>
-          <text class="st" x="770" y="82" font-size="15" text-anchor="middle" transform="rotate(0.8 770 77)">t2</text>
-          <rect class="cbox" x="800" y="62" width="40" height="30" rx="8" transform="rotate(-0.7 820 77)"/>
-          <text class="st" x="820" y="82" font-size="15" text-anchor="middle" transform="rotate(-0.7 820 77)">t3</text>
-          <rect class="cbox" x="850" y="62" width="40" height="30" rx="8" transform="rotate(1 870 77)"/>
-          <text class="st" x="870" y="82" font-size="15" text-anchor="middle" transform="rotate(1 870 77)">t4</text>
-          <rect class="cbox" x="900" y="62" width="40" height="30" rx="8" transform="rotate(-0.9 920 77)"/>
-          <text class="st" x="920" y="82" font-size="15" text-anchor="middle" transform="rotate(-0.9 920 77)">t5</text>
+          <g class="el" data-t="9450">
+            <rect class="cbox" x="700" y="502" width="58" height="30" rx="8" transform="rotate(-1 729 517)"/>
+            <text class="st" x="729" y="522" font-size="14" text-anchor="middle" transform="rotate(-1 729 517)">get</text>
+          </g>
+          <g class="el" data-t="9700">
+            <rect class="cbox" x="764" y="502" width="58" height="30" rx="8" transform="rotate(0.8 793 517)"/>
+            <text class="st" x="793" y="522" font-size="14" text-anchor="middle" transform="rotate(0.8 793 517)">to</text>
+          </g>
+          <g class="el" data-t="9950">
+            <rect class="cbox" x="828" y="502" width="58" height="30" rx="8" transform="rotate(-0.7 857 517)"/>
+            <text class="st" x="857" y="522" font-size="14" text-anchor="middle" transform="rotate(-0.7 857 517)">school</text>
+          </g>
+          <g class="el" data-t="10200">
+            <rect class="cbox" x="892" y="502" width="58" height="30" rx="8" transform="rotate(1 921 517)"/>
+            <text class="st" x="921" y="522" font-size="14" text-anchor="middle" transform="rotate(1 921 517)">quickly</text>
+          </g>
         </g>
-        <path class="flow" filter="url(#slip3)" d="M800,116 V100 M794,108 L800,98 L806,108"/>
-        <text class="sd" x="812" y="110" font-size="13">block out</text>
-
-        <!-- input row, enters the bottom -->
-        <g filter="url(#slip2)">
-          <rect class="cbox" x="615" y="502" width="64" height="30" rx="8" transform="rotate(0.8 647 517)"/>
-          <text class="st" x="647" y="522" font-size="15" text-anchor="middle" transform="rotate(0.8 647 517)">anchor</text>
-          <rect class="cmask" x="686" y="502" width="58" height="30" rx="8" transform="rotate(-0.7 715 517)"/>
-          <text class="sd" x="715" y="522" font-size="15" text-anchor="middle" transform="rotate(-0.7 715 517)">MASK</text>
-          <rect class="cmask" x="751" y="502" width="58" height="30" rx="8" transform="rotate(0.9 780 517)"/>
-          <text class="sd" x="780" y="522" font-size="15" text-anchor="middle" transform="rotate(0.9 780 517)">MASK</text>
-          <rect class="cmask" x="816" y="502" width="58" height="30" rx="8" transform="rotate(-0.8 845 517)"/>
-          <text class="sd" x="845" y="522" font-size="15" text-anchor="middle" transform="rotate(-0.8 845 517)">MASK</text>
-          <rect class="cmask" x="881" y="502" width="58" height="30" rx="8" transform="rotate(0.7 910 517)"/>
-          <text class="sd" x="910" y="522" font-size="15" text-anchor="middle" transform="rotate(0.7 910 517)">MASK</text>
-        </g>
-        <path class="flow" filter="url(#slip3)" d="M800,496 V434 M794,442 L800,432 L806,442"/>
-        <text class="sd" x="812" y="470" font-size="13">block in</text>
+        <path class="flow" data-t="10450" filter="url(#slip3)" d="M800,428 V492 M794,486 L800,496 L806,486"/>
+        <text class="sd" data-t="10450" x="812" y="470" font-size="13">block out</text>
 
         <!-- caption -->
-        <text class="sd" x="560" y="552" font-size="15" text-anchor="middle" transform="rotate(-0.3 560 552)" filter="url(#slip3)">every layer sees the full prefix &middot; injected once per block</text>
+        <g class="el" data-t="10800">
+          <text class="sd" x="560" y="552" font-size="15" text-anchor="middle" transform="rotate(-0.3 560 552)" filter="url(#slip3)">every layer sees the full prefix &middot; injected once per block</text>
+        </g>
 
         <!-- EAGLE-3 contrast -->
-        <g transform="rotate(0.4 230 478)">
-          <rect class="cboxd" x="28" y="430" width="404" height="96" rx="10" filter="url(#slip1)"/>
-          <text class="sd" x="48" y="464" font-size="15" filter="url(#slip2)">EAGLE-3 conditions on the last token only,</text>
-          <text class="sd" x="48" y="490" font-size="15" filter="url(#slip2)">and injects at the bottom layer only.</text>
-          <text class="sd" x="48" y="514" font-size="13">signal fades in deeper layers</text>
+        <g class="el" data-t="11200">
+          <g transform="rotate(0.4 230 478)">
+            <rect class="cboxd" x="28" y="430" width="404" height="96" rx="10" filter="url(#slip1)"/>
+            <text class="sd" x="48" y="464" font-size="15" filter="url(#slip2)">EAGLE-3 conditions on the last token only,</text>
+            <text class="sd" x="48" y="490" font-size="15" filter="url(#slip2)">and injects at the first layer only.</text>
+            <text class="sd" x="48" y="514" font-size="13">signal fades in deeper layers</text>
+          </g>
         </g>
       </svg>
     </div>
@@ -186,6 +255,26 @@ body.standalone .wrap{width:100%}
 
 <script>
 (function(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('[data-t]'));
+  // idempotent paint(t): data-t is in ms, every .el is on once t passes it
+  var END = 11.6;
+  function paint(t){ els.forEach(function(e){ e.classList.toggle('on', t * 1000 >= +e.getAttribute('data-t')); }); }
+  var t0 = performance.now(), raf = null;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function tick(){
+    var t = (performance.now() - t0) / 1000;
+    if (t >= END){ paint(END); raf = null; return; }
+    paint(t); raf = requestAnimationFrame(tick);
+  }
+  function play(){
+    if (raf) cancelAnimationFrame(raf);
+    if (reduced){ paint(END); return; }
+    t0 = performance.now(); paint(0); raf = requestAnimationFrame(tick);
+  }
+  document.getElementById('replay').addEventListener('click', play);
+  play();
+  window.addEventListener('beforeprint', function(){ if (raf) cancelAnimationFrame(raf); paint(1e9); });
+
   function postHeight(){
     parent.postMessage({
       chalkHeight: Math.ceil(document.body.getBoundingClientRect().height),

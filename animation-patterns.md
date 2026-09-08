@@ -72,8 +72,10 @@ generated in a loop at `sec/AXIS*100%`; playhead is a 0-width, 2px-left-border
 div whose `left` tracks `t`.
 
 **Status line**: dim one-liner per panel, rewritten by `paint`, narrates the
-current beat ("round 2: drafting + verifying…"). Give it `min-height` so the
-layout doesn't jump. **Done badge**: outlined pill, `opacity:0→1` at its beat,
+current beat ("round 2: drafting + verifying…"). Give it a FIXED `height` +
+`line-height` + `white-space:nowrap` (never `min-height`) so the board never
+changes height mid-play; any element that fills in over time (tally, badge,
+status) follows the same rule. **Done badge**: outlined pill, `opacity:0→1` at its beat,
 slight rotation.
 
 **SVG curve draw-on** (plots): stroke the path with

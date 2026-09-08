@@ -27,35 +27,35 @@ shape* from *the drawing of it*; `paint(t)` separates *the story's beats*
 from *the rendering of any moment*. Whenever part of a figure feels too hard
 to produce directly, don't push harder, find the split.
 
-## Phase 0: intake (three questions, one at a time)
+## Phase 0: intake (one questionnaire, always)
 
-Before drawing anything, ask these in order and wait for each answer. One
-question per message; do not bundle them. The goal is to learn what the user
-sees in their head, not to pick one of our examples.
+Before drawing anything, run ONE intake questionnaire. Use the native
+structured multiple-choice UI if the environment has one (in Claude Code that
+is the AskUserQuestion tool, with all three questions in a single call);
+otherwise ask all three in one concise message with lettered options. Run it
+even when the user handed you a description or a sketch up front: pre-fill
+the recommended option from what they gave and mark it "(Recommended)", but
+still ask. Do not propose a mock or any graphics before the answers are in.
 
-1. **What is the idea?** Ask the user to paste the paragraph, figure caption,
-   or sentence the figure should teach. Read it back in one line: "So the one
-   thing this figure says is ___." Fix that line until they agree.
-2. **What does it look like?** Offer these five and let them answer with a
-   letter, a mix, or their own words:
+1. **What is the idea?** (header "Idea"). Offer 2-3 candidate one-line
+   read-backs of the paragraph or sentence they pasted, e.g. "the one thing
+   this figure says is ___". Each option is a different emphasis (mechanism,
+   payoff, contrast). They pick one or type their own.
+2. **What does it look like?** (header "Layout"). Options:
 
    A. Line chart: curves on axes, where a crossing or a gap is the point
    B. Two-panel contrast: same input, two methods, side by side
    C. Step-by-step walkthrough: one beat at a time
    D. Architecture diagram: labeled components and what flows between them
-   E. Help me decide
-   F. Chat with me: ___
 
-   On E, propose one from the idea in one sentence and wait for a yes. On F,
-   they fill in the blank in their own words.
-3. **How does it move?** Plays itself once (default), buttons the reader
-   toggles, or a slider the reader drags.
+   Write each option's description in terms of THEIR figure, not generic
+   text. "Other" is where they describe it in their own words.
+3. **How does it move?** (header "Motion"). Plays itself once (default),
+   buttons the reader toggles, or a slider the reader drags.
 
 Then go to Phase 1. If one of the figures in `examples/` happens to share the
 shape they described, you may open it in Phase 2 as a starting point, but do
 not go looking for the closest one, and never bend their picture to fit ours.
-If the user gave all of this up front, skip the questions and just state the
-read-back line.
 
 Do not skip phase 1 for anything non-trivial, layout
 mistakes are 10x cheaper to fix in ASCII than in styled HTML.
@@ -95,7 +95,11 @@ Beats: t=0 start · t=1.65 chunk 1 · t=3.3 chunk 2 + done badge
 Conventions: `:` dashed panel borders, `[x]` chips, `(...)` grouped chunks,
 `=` filled / `-` unfilled progress. Annotate anything that moves with `<-`.
 
-Iterate here until the user approves the layout and the story beats. If the
+Then approve the mock with a SECOND questionnaire (same native UI). One
+question, header "Mock": approve as drawn (Recommended) / one or two concrete
+layout alternatives you can see (e.g. flat grids vs a 3D slab, stacked vs side
+by side) / "change beats or labels" where they say what to change via Other.
+Iterate until they approve the layout and the story beats. If the
 user is not available (a batch run, an unattended agent), write the mock and
 beat table to `<topic>_mock.md` next to the output and proceed as if approved,
 so there is still a contract to check the figure against. The mock
@@ -201,6 +205,8 @@ install chromium`); in a sandboxed agent, headless Chromium may need the
 sandbox off for that one command. Check:
 
 - nothing overflows the slate; chips wrap instead of clipping
+- the board height is identical at t=0 and at END (reserve space for every
+  late-appearing line with fixed heights; measure both screenshots)
 - the final frame is self-sufficient, a reader who only ever sees the frozen
   frame (print, reduced motion) still gets the full message, including
   every label and the "done" state

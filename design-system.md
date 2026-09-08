@@ -148,11 +148,17 @@ One attribute on the slate sets all three imperfection systems at once:
 <div class="slate" data-chalk="normal">   <!-- tidy | normal | rough -->
 ```
 
-| Preset | Filter scale | Waver probability | `--tilt` | Reads as |
-| --- | --- | --- | --- | --- |
-| tidy | 0.5x | only elements over 280px, half of them | 0.3 | a careful teacher, fresh chalk |
-| normal | 1x | the length-weighted curve above | 1 | every example in this repo |
-| rough | 1.7x | everything over 60px | 1.7 | end of a long lecture |
+| Preset | Slip scale | Waver probability | `--tilt` | Grain (gaps in strokes) | Fade (long strokes thin out) | Reads as |
+| --- | --- | --- | --- | --- | --- | --- |
+| tidy | 0.5x | only elements over 280px, half of them | 0.3 | none | none | a careful teacher, fresh chalk |
+| normal | 1x | the length-weighted curve above | 1 | light dust, no visible gaps | none | every example in this repo |
+| rough | 1.7x | everything over 60px | 1.7 | visible gaps, chalk skipping on slate | SVG paths over 200px fade to 40% at the end | end of a long lecture |
+
+Five imperfection systems, one attribute. Grain is `#grain`, a noise-masked alpha
+filter applied to every SVG stroke on the slate (`filterUnits="userSpaceOnUse"`,
+because a perfectly straight line has a zero-width bounding box and would
+otherwise vanish). Fade is `#fade`, a horizontal gradient stroke applied to
+paths whose `getTotalLength()` exceeds the preset's threshold.
 
 Every `rotate()` in the CSS multiplies by `var(--tilt)`, so new classes should too:
 `transform:rotate(calc(-0.8deg * var(--tilt)))`. The slip script reads the attribute

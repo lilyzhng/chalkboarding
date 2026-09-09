@@ -211,18 +211,21 @@ bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click a control
 
 Then tell the user the output path and size, and that redoing the export overwrites the same file.
 
-### Voice-over (optional, macOS)
+### Voice-over (optional)
 
-A figure is silent by default. To turn it into a narrated explainer, declare
-spoken lines against the figure's beats and export with `--narrate`:
+A figure is silent by default. To narrate it, declare lines against the figure's beats in an embedded block, then export with `--narrate`:
 
-```bash
-bash scripts/export.sh <file> --narrate                                  # macOS say
-OPENROUTER_API_KEY=... bash scripts/export.sh <file> --narrate --tts openrouter --voice nova   # GPT voice
-GEMINI_API_KEY=...     bash scripts/export.sh <file> --narrate --tts gemini --voice Kore       # Gemini TTS
+```html
+<script type="application/vo+json" id="vo">
+[ {"t": 0, "text": "Ever wonder what happens when you tap play?"},
+  {"t": 7, "text": "First, your tap zips to your home router."} ]
+</script>
 ```
 
-Narration is placed at absolute timestamps (the video stays authoritative, so
-it never drifts out of sync). Off unless asked for. Backends: macOS `say`
-(no key), `openrouter` (GPT voices), or `gemini` (Gemini TTS, the most natural). Full format
-and timing rules in `narration.md`.
+```bash
+GEMINI_API_KEY=...     bash scripts/export.sh <file> --narrate --tts gemini        # most natural
+OPENROUTER_API_KEY=... bash scripts/export.sh <file> --narrate --tts openrouter    # GPT voices
+bash scripts/export.sh <file> --narrate                                            # macOS say, no key
+```
+
+`--voice female` (default) or `--voice male` picks a recommended voice per backend; any backend voice name also works (Gemini: Kore, Puck, Zephyr...; GPT: coral, ballad, nova...; say: `say -v '?'`). Lines never overlap: one that would run into the next beat is sped up by at most 12%, then the next line is delayed, and `narrate.py` prints a fit table showing any drift. Keep lines short, Gemini speaks slowly. Without `--narrate`, or if the backend's key is missing, the export is unchanged. Narrate an existing MP4 without re-exporting: `python3 scripts/narrate.py <file>.html <file>.mp4 --tts gemini`.

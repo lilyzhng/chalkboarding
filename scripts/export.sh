@@ -19,7 +19,7 @@
 #   2. Checks ffmpeg is installed (brew install ffmpeg).
 #   3. Runs export_media.py: drives the page on a virtual clock, screenshots
 #      every frame at 2x, crops to the board, encodes with ffmpeg.
-#   4. Optional: with --narrate, muxes a voice-over onto the MP4 (see narration.md).
+#   4. Optional: with --narrate, muxes a voice-over onto the MP4 (see SKILL.md).
 #
 # Flags after the HTML path are passed to export_media.py, EXCEPT --narrate,
 # --voice and --tts, which control the optional voice-over step.

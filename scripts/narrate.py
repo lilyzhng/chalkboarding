@@ -1,29 +1,8 @@
 #!/usr/bin/env python3
-"""Add an OPTIONAL voice-over to a chalkboard figure's exported MP4.
+"""Mux an optional voice-over onto a figure's MP4: lines from the figure's
+<script type="application/vo+json"> block, placed at their beat times. See SKILL.md.
 
-The video is authoritative: the figure already plays on a fixed beat schedule,
-so narration lines are placed at absolute timestamps (not concatenated), which
-means they can never drift out of sync. A line that overruns its beat only
-overlaps the next one briefly; a fit-check warns when that happens.
-
-Narration lives WITH the figure (the skill's "one self-contained HTML file"
-principle): an embedded JSON block, or a sidecar file.
-
-    <script type="application/vo+json" id="vo">
-    [ {"t": 0,  "text": "Ever wonder what happens when you tap play?"},
-      {"t": 7,  "text": "First, your tap zips to your home router."} ]
-    </script>
-
-Times are seconds, aligned to the figure's own beats. Sidecar fallback:
-`<figure>_vo.json` next to the HTML, or `--vo <file>`.
-
-TTS is pluggable; only macOS `say` is implemented today. On a non-macOS host
-(or if the chosen backend is unavailable) this exits 0 without changing the
-video, so a silent export still ships.
-
-Usage:
-    python3 scripts/narrate.py <figure.html> <figure.mp4> [--voice NAME]
-                               [--tts say] [--vo FILE] [--out FILE]
+Usage: python3 scripts/narrate.py <figure.html> <figure.mp4> [--tts say|openrouter|gemini] [--voice NAME] [--vo FILE] [--out FILE]
 """
 import argparse
 import base64
@@ -38,13 +17,37 @@ import tempfile
 import urllib.request
 
 
-# ---------------------------------------------------------------------------
-# TTS backends — a tiny seam so ElevenLabs / Azure / Qwen3-TTS can be added
-# later without touching the figure format or the mux logic.
-# ---------------------------------------------------------------------------
+STYLE = os.environ.get("NARRATE_STYLE", "Warm, natural, unhurried teacher voice.")
+READ_EXACTLY = "Read this exactly as written, word for word. Do not add, remove, or rephrase anything. "
+# gpt-audio is a chat model: without this framing it answers the line instead of reading it.
+TTS_ENGINE = "You are a text-to-speech engine. Speak the user's text verbatim. Never answer, comment, or add words. "
+HTTP_TIMEOUT = 120
+TTS_RATE = 24000        # pcm16 sample rate both cloud backends return
+AAC = ["-ar", "48000", "-ac", "2", "-c:a", "aac", "-b:a", "192k"]
+MAX_TEMPO = 1.12        # speed a long line up by at most 12% before delaying the next one
+GAP = 0.25              # breath between lines, seconds
+OVERRUN_SLACK = 0.2     # seconds a line may spill past the next beat before we act
+# Recommended voices per backend. `--voice female` / `--voice male` resolve to
+# these; a bare `--tts` with no `--voice` uses the female pick.
+RECOMMENDED = {
+    "gemini":     {"female": "Kore",     "male": "Puck"},
+    "openrouter": {"female": "coral",    "male": "ballad"},
+    "say":        {"female": "Samantha", "male": "Daniel"},
+}
+DEFAULT_VOICE = {k: v["female"] for k, v in RECOMMENDED.items()}
+
+
+def _encode(pcm, rate, out_wav):
+    """Write raw 16-bit mono PCM as 48k stereo AAC for muxing."""
+    raw = out_wav + ".pcm"
+    open(raw, "wb").write(pcm)
+    sp.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "s16le", "-ar", str(rate), "-ac", "1",
+            "-i", raw] + AAC + [out_wav], check=True)
+    os.remove(raw)
+
+
 class SayBackend:
-    """macOS built-in `say`. Discover voices with `say -v '?'`; premium/enhanced
-    neural voices (e.g. 'Serena (Premium)', 'Isha (Premium)') sound best."""
+    """macOS built-in `say`. Discover voices with `say -v '?'`."""
     name = "say"
 
     @staticmethod
@@ -54,28 +57,16 @@ class SayBackend:
     @staticmethod
     def synth(text, out_wav, voice):
         aiff = out_wav + ".aiff"
-        cmd = ["say"]
-        if voice:
-            cmd += ["-v", voice]
-        cmd += ["-o", aiff, text]
-        sp.run(cmd, check=True)
-        # normalize to 48k stereo aac for a clean mix/mux
-        sp.run(["ffmpeg", "-y", "-loglevel", "error", "-i", aiff,
-                "-ar", "48000", "-ac", "2", "-c:a", "aac", "-b:a", "192k", out_wav],
-               check=True)
+        sp.run(["say"] + (["-v", voice] if voice else []) + ["-o", aiff, text], check=True)
+        sp.run(["ffmpeg", "-y", "-loglevel", "error", "-i", aiff] + AAC + [out_wav], check=True)
         os.remove(aiff)
 
 
 class OpenRouterBackend:
-    """GPT voices via OpenRouter (openai/gpt-audio-mini by default). Needs
-    OPENROUTER_API_KEY. Audio output requires streaming; chunks arrive as base64
-    pcm16 at 24 kHz and are concatenated, then encoded with ffmpeg. Voices: alloy,
-    ash, ballad, coral, echo, fable, nova, onyx, sage, shimmer, verse."""
+    """GPT voices via OpenRouter. Audio is streamed as base64 pcm16 at 24 kHz."""
     name = "openrouter"
     URL = "https://openrouter.ai/api/v1/chat/completions"
     MODEL = os.environ.get("OPENROUTER_TTS_MODEL", "openai/gpt-audio-mini")
-    STYLE = os.environ.get("NARRATE_STYLE",
-                           "Warm, natural, unhurried teacher voice.")
 
     @staticmethod
     def available():
@@ -84,57 +75,35 @@ class OpenRouterBackend:
     @classmethod
     def synth(cls, text, out_wav, voice):
         body = {
-            "model": cls.MODEL, "stream": True,
-            "modalities": ["text", "audio"],
-            "audio": {"voice": voice or "nova", "format": "pcm16"},
-            "messages": [
-                {"role": "system", "content": "You are a voice-over reader. Read the user text "
-                 "aloud exactly as written, word for word. Do not add, remove, or rephrase "
-                 "anything. " + cls.STYLE},
-                {"role": "user", "content": text},
-            ],
+            "model": cls.MODEL, "stream": True, "modalities": ["text", "audio"],
+            "audio": {"voice": voice, "format": "pcm16"},
+            "messages": [{"role": "system", "content": TTS_ENGINE + STYLE},
+                         {"role": "user", "content": f'Read aloud exactly: "{text}"'}],
         }
         req = urllib.request.Request(cls.URL, data=json.dumps(body).encode(), headers={
             "Authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"],
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/lilyzhng/chalkboarding",
         })
         pcm = bytearray()
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as r:
             for raw in r:
                 line = raw.decode("utf-8", "ignore").strip()
-                if not line.startswith("data:"):
+                if not line.startswith("data:") or line == "data: [DONE]":
                     continue
-                payload = line[5:].strip()
-                if payload == "[DONE]":
-                    break
-                try:
-                    d = json.loads(payload)
-                except ValueError:
-                    continue
+                d = json.loads(line[5:])
                 if "error" in d:
                     raise RuntimeError(d["error"].get("message", str(d["error"])))
                 for ch in d.get("choices", []):
-                    a = (ch.get("delta") or {}).get("audio") or {}
-                    if a.get("data"):
-                        pcm += base64.b64decode(a["data"])
+                    pcm += base64.b64decode(ch.get("delta", {}).get("audio", {}).get("data", ""))
         if not pcm:
             raise RuntimeError("no audio returned")
-        raw_path = out_wav + ".pcm"
-        open(raw_path, "wb").write(pcm)
-        sp.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "s16le", "-ar", "24000", "-ac", "1",
-                "-i", raw_path, "-ar", "48000", "-ac", "2", "-c:a", "aac", "-b:a", "192k", out_wav],
-               check=True)
-        os.remove(raw_path)
+        _encode(pcm, TTS_RATE, out_wav)
 
 
 class GeminiBackend:
-    """Gemini TTS (gemini-3.1-flash-tts-preview by default). Needs GEMINI_API_KEY.
-    Returns pcm16 at 24 kHz, encoded with ffmpeg. Voices include Kore, Puck,
-    Zephyr, Aoede, Charon, Fenrir, Leda, Orus; full list in the Gemini docs."""
+    """Gemini TTS. Returns base64 pcm16; sample rate comes from the mime type."""
     name = "gemini"
     MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-3.1-flash-tts-preview")
-    STYLE = os.environ.get("NARRATE_STYLE", "Warm, natural, unhurried teacher voice.")
 
     @staticmethod
     def available():
@@ -145,38 +114,19 @@ class GeminiBackend:
         url = (f"https://generativelanguage.googleapis.com/v1beta/models/{cls.MODEL}:generateContent"
                f"?key={os.environ['GEMINI_API_KEY']}")
         body = {
-            "contents": [{"parts": [{"text": f"Read this exactly as written, word for word. {cls.STYLE}\n\n{text}"}]}],
+            "contents": [{"parts": [{"text": f"{READ_EXACTLY}{STYLE}\n\n{text}"}]}],
             "generationConfig": {"responseModalities": ["AUDIO"],
-                                 "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice or "Kore"}}}},
+                                 "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice}}}},
         }
         req = urllib.request.Request(url, data=json.dumps(body).encode(),
                                      headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=120) as r:
-            d = json.load(r)
-        part = d["candidates"][0]["content"]["parts"][0]["inlineData"]
-        pcm = base64.b64decode(part["data"])
-        rate = 24000
+        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as r:
+            part = json.load(r)["candidates"][0]["content"]["parts"][0]["inlineData"]
         m = re.search(r"rate=(\d+)", part.get("mimeType", ""))
-        if m:
-            rate = int(m.group(1))
-        raw_path = out_wav + ".pcm"
-        open(raw_path, "wb").write(pcm)
-        sp.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "s16le", "-ar", str(rate), "-ac", "1",
-                "-i", raw_path, "-ar", "48000", "-ac", "2", "-c:a", "aac", "-b:a", "192k", out_wav],
-               check=True)
-        os.remove(raw_path)
+        _encode(base64.b64decode(part["data"]), int(m.group(1)) if m else TTS_RATE, out_wav)
 
 
 BACKENDS = {b.name: b for b in (SayBackend, OpenRouterBackend, GeminiBackend)}
-
-# Recommended voices per backend. `--voice female` / `--voice male` resolve to
-# these; a bare `--tts` with no `--voice` uses the female pick.
-RECOMMENDED = {
-    "gemini":     {"female": "Kore",     "male": "Puck"},
-    "openrouter": {"female": "coral",    "male": "ballad"},
-    "say":        {"female": "Samantha", "male": "Daniel"},
-}
-DEFAULT_VOICE = {k: v["female"] for k, v in RECOMMENDED.items()}
 
 
 def resolve_voice(tts, voice):
@@ -252,8 +202,6 @@ def main():
     vlen = _dur(args.video)
     tmp = tempfile.mkdtemp(prefix="chalk_vo_")
     clips = []
-    MAX_TEMPO = 1.12   # speed a long line up by at most 12% before delaying the next one
-    GAP = 0.25         # breath between lines, seconds
     print("beat  beat_t  start  dur   ends   window  note")
     prev_end = 0.0
     for i, b in enumerate(beats):
@@ -266,17 +214,16 @@ def main():
         # never overlap the previous line: start at the beat, or after the previous line ends
         start = max(b["t"], prev_end + GAP if i else 0.0)
         # if this line would still run into the next beat, compress it a little first
-        if start + d > nxt + 0.2 and i + 1 < len(beats):
+        if start + d > nxt + OVERRUN_SLACK and i + 1 < len(beats):
             tempo = min(MAX_TEMPO, d / max(0.1, nxt - start))
             if tempo > 1.01:
                 fast = os.path.join(tmp, f"l{i}f.m4a")
-                sp.run(["ffmpeg", "-y", "-loglevel", "error", "-i", clip, "-filter:a", f"atempo={tempo:.3f}",
-                        "-c:a", "aac", "-b:a", "192k", fast], check=True)
+                sp.run(["ffmpeg", "-y", "-loglevel", "error", "-i", clip, "-filter:a", f"atempo={tempo:.3f}"] + AAC + [fast], check=True)
                 clip, d = fast, _dur(fast)
                 note = f"sped {tempo:.2f}x"
         if start > b["t"] + 0.05:
             note += f", delayed +{start - b['t']:.1f}s"
-        if start + d > nxt + 0.2 and i + 1 < len(beats):
+        if start + d > nxt + OVERRUN_SLACK and i + 1 < len(beats):
             note += ", still overruns"
         clips.append((start, clip, d))
         prev_end = start + d
@@ -296,8 +243,7 @@ def main():
                 f"apad,atrim=0:{final_len}[out]")
     track = os.path.join(tmp, "narration.m4a")
     sp.run(["ffmpeg", "-y", "-loglevel", "error", *inputs,
-            "-filter_complex", ";".join(filt), "-map", "[out]",
-            "-ar", "48000", "-ac", "2", "-c:a", "aac", "-b:a", "192k", track], check=True)
+            "-filter_complex", ";".join(filt), "-map", "[out]"] + AAC + [track], check=True)
 
     # extend the video with a frozen last frame if narration runs past the end
     pad = final_len - vlen
@@ -314,8 +260,7 @@ def main():
     vcodec = ["-c:v", "copy"] if src == args.video else \
              ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18"]
     sp.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-i", track,
-            "-map", "0:v:0", "-map", "1:a:0", *vcodec,
-            "-c:a", "aac", "-b:a", "192k", "-shortest", tmp_out], check=True)
+            "-map", "0:v:0", "-map", "1:a:0", *vcodec] + AAC + ["-shortest", tmp_out], check=True)
     os.replace(tmp_out, out)
     print(f"\nok voice-over ({voice}) muxed -> {out}  ({_dur(out):.1f}s)")
     return 0

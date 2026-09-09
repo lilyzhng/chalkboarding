@@ -199,6 +199,9 @@ def main():
         voice = None
 
     vlen = _dur(args.video)
+    if vlen < beats[-1]["t"]:
+        print(f"! narrate: video is {vlen:.0f}s but the last line starts at {beats[-1]['t']:.0f}s; "
+              f"the animation will freeze. Re-export with --seconds {math.ceil(beats[-1]['t'])} or more.")
     tmp = tempfile.mkdtemp(prefix="chalk_vo_")
     clips = []
     print("beat  beat_t  start  dur   ends   window  note")

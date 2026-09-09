@@ -34,7 +34,6 @@ RECOMMENDED = {
     "openrouter": {"female": "coral",    "male": "ballad"},
     "say":        {"female": "Samantha", "male": "Daniel"},
 }
-DEFAULT_VOICE = {k: v["female"] for k, v in RECOMMENDED.items()}
 
 
 def _encode(pcm, rate, out_wav):
@@ -133,7 +132,7 @@ def resolve_voice(tts, voice):
     """Map the female/male aliases to the backend's recommended voice."""
     if voice and voice.lower() in ("female", "male"):
         return RECOMMENDED[tts][voice.lower()]
-    return voice or DEFAULT_VOICE.get(tts)
+    return voice or RECOMMENDED[tts]["female"]
 
 
 def installed_say_voices():
@@ -185,14 +184,14 @@ def main():
     beats = load_beats(args.html, args.vo)
     if not beats:
         print("i narrate: no narration found (embedded <script type=\"application/vo+json\">"
-              " or <figure>_vo.json) — leaving the video silent.")
+              " or <figure>_vo.json); leaving the video silent.")
         return 0
 
     backend = BACKENDS[args.tts]
     if not backend.available():
-        hint = {"openrouter": "set OPENROUTER_API_KEY (optional; any OpenRouter key works)",
+        hint = {"openrouter": "set OPENROUTER_API_KEY",
                 "gemini": "set GEMINI_API_KEY", "say": "macOS only"}.get(args.tts, "")
-        print(f"! narrate: TTS backend '{args.tts}' is unavailable: {hint} — leaving the video silent.")
+        print(f"! narrate: TTS backend '{args.tts}' is unavailable ({hint}); leaving the video silent.")
         return 0
     voice = resolve_voice(args.tts, args.voice)
     if voice and args.tts == "say" and voice not in installed_say_voices():

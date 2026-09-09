@@ -11,7 +11,7 @@
 #   bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click an element at 4s
 #   bash scripts/export.sh my_chalk.html --narrate                        # + voice-over (macOS say)
 #   bash scripts/export.sh my_chalk.html --narrate --tts openrouter --voice nova   # GPT voice via OpenRouter
-#   bash scripts/export.sh my_chalk.html --narrate --tts gemini --voice Kore       # Gemini TTS (top of the TTS arena)
+#   bash scripts/export.sh my_chalk.html --narrate --tts gemini --voice Kore       # Gemini TTS
 #
 # What this does:
 #   1. First run only: creates a private Python env in ~/.cache/chalkboarding,

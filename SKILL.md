@@ -210,3 +210,20 @@ bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click a control
 ```
 
 Then tell the user the output path and size, and that redoing the export overwrites the same file.
+
+### Voice-over (optional, macOS)
+
+Declare lines against the figure's beats in an embedded block, then export with `--narrate`:
+
+```html
+<script type="application/vo+json" id="vo">
+[ {"t": 0, "text": "Ever wonder what happens when you tap play?"},
+  {"t": 7, "text": "First, your tap zips to your home router."} ]
+</script>
+```
+
+```bash
+bash scripts/export.sh my_chalk.html --narrate --voice "Samantha"
+```
+
+Each line must fit before the next one starts; `narrate.py` prints a fit table and flags OVERFLOW. Voices: `say -v '?'`. Without `--narrate` the export is unchanged.

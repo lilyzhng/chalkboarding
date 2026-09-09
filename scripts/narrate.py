@@ -262,7 +262,7 @@ def main():
     sp.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-i", track,
             "-map", "0:v:0", "-map", "1:a:0", *vcodec] + AAC + ["-shortest", tmp_out], check=True)
     os.replace(tmp_out, out)
-    print(f"\nok voice-over ({voice}) muxed -> {out}  ({_dur(out):.1f}s)")
+    print(f"\nok voice-over ({voice or 'system default'}) muxed -> {out}  ({_dur(out):.1f}s)")
     return 0
 
 

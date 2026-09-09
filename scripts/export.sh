@@ -9,7 +9,8 @@
 #   bash scripts/export.sh my_chalk.html --gif                # also my_chalk.gif (autoplays in a README)
 #   bash scripts/export.sh my_chalk.html --seconds 9 --fps 30 --width 1200
 #   bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click an element at 4s
-#   bash scripts/export.sh my_chalk.html --narrate --voice "Serena (Premium)"  # + voice-over (macOS)
+#   bash scripts/export.sh my_chalk.html --narrate                        # + voice-over (macOS say)
+#   bash scripts/export.sh my_chalk.html --narrate --tts openrouter --voice nova   # GPT voice via OpenRouter
 #
 # What this does:
 #   1. First run only: creates a private Python env in ~/.cache/chalkboarding,
@@ -24,7 +25,7 @@
 set -euo pipefail
 
 if [[ $# -lt 1 || "$1" == "-h" || "$1" == "--help" ]]; then
-    echo "Usage: bash scripts/export.sh <figure.html> [--gif] [--seconds N] [--fps N] [--width N] [--out DIR] [--click SEL@SEC] [--narrate] [--voice NAME] [--tts say]"
+    echo "Usage: bash scripts/export.sh <figure.html> [--gif] [--seconds N] [--fps N] [--width N] [--out DIR] [--click SEL@SEC] [--narrate] [--voice NAME] [--tts say|openrouter]"
     exit 1
 fi
 if [[ ! -f "$1" ]]; then
@@ -61,7 +62,11 @@ ok "ffmpeg found"
 info "Rendering..."
 "$PY" "$SCRIPT_DIR/export_media.py" "$HTML" ${PASS[@]+"${PASS[@]}"}
 
-OUT_BASE="${HTML%.html}"
+OUT_DIR="$(dirname "$HTML")"
+for ((i=0; i<${#PASS[@]}; i++)); do
+    [[ "${PASS[$i]}" == "--out" ]] && OUT_DIR="${PASS[$((i+1))]}"
+done
+OUT_BASE="$OUT_DIR/$(basename "${HTML%.html}")"
 
 if [[ "$NARRATE" == "1" ]]; then
     if [[ -f "$OUT_BASE.mp4" ]]; then

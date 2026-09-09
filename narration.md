@@ -5,9 +5,9 @@ figure already plays on a fixed schedule of beats, so it can carry an **optional
 voice-over** that turns it into a narrated explainer. This is off unless you ask
 for it, and it never changes the silent export.
 
-> Status: **macOS only for now** (uses the built-in `say` voices). The TTS layer
-> is a small pluggable seam (`BACKENDS` in `scripts/narrate.py`) so ElevenLabs /
-> Azure / Qwen3-TTS and non-macOS hosts can be added later without changing the
+> Two backends: macOS `say` (built in, no key) and `openrouter` (GPT voices via
+> OpenRouter, needs `OPENROUTER_API_KEY`). The TTS layer is a small seam
+> (`BACKENDS` in `scripts/narrate.py`) so more can be added without changing the
 > narration format below.
 
 ## 1. Declare the lines with the figure
@@ -40,9 +40,14 @@ frozen last frame to cover it.
 ## 2. Export with a voice
 
 ```bash
-bash scripts/export.sh my_chalk.html --narrate                       # default voice
-bash scripts/export.sh my_chalk.html --narrate --voice "Isha (Premium)"
+bash scripts/export.sh my_chalk.html --narrate                                   # macOS say, Samantha
+bash scripts/export.sh my_chalk.html --narrate --voice "Serena (Premium)"        # a Premium say voice, if installed
+OPENROUTER_API_KEY=... bash scripts/export.sh my_chalk.html --narrate --tts openrouter --voice nova   # GPT voice
 ```
+
+GPT voices (`--tts openrouter`): alloy, ash, ballad, coral, echo, fable, nova, onyx,
+sage, shimmer, verse. Model defaults to `openai/gpt-audio-mini`; override with
+`OPENROUTER_TTS_MODEL`. Delivery style is a system prompt, override with `NARRATE_STYLE`.
 
 `export.sh` renders the silent MP4 as usual, then muxes the voice-over onto it
 (video stream copied, so no quality loss). Without `--narrate`, nothing changes.

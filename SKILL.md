@@ -217,10 +217,11 @@ A figure is silent by default. To turn it into a narrated explainer, declare
 spoken lines against the figure's beats and export with `--narrate`:
 
 ```bash
-bash scripts/export.sh <file> --narrate --voice "Serena (Premium)"
+bash scripts/export.sh <file> --narrate                                  # macOS say
+OPENROUTER_API_KEY=... bash scripts/export.sh <file> --narrate --tts openrouter --voice nova   # GPT voice
 ```
 
 Narration is placed at absolute timestamps (the video stays authoritative, so
-it never drifts out of sync). Off unless asked for; **macOS `say` only for
-now**, with a pluggable seam for other TTS backends. Full format and timing
-rules in `narration.md`.
+it never drifts out of sync). Off unless asked for. Backends: macOS `say`
+(no key) or `openrouter` (GPT voices, needs `OPENROUTER_API_KEY`). Full format
+and timing rules in `narration.md`.

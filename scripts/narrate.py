@@ -26,13 +26,16 @@ Usage:
                                [--tts say] [--vo FILE] [--out FILE]
 """
 import argparse
+import base64
 import json
 import math
 import os
 import re
+import shutil
 import subprocess as sp
 import sys
 import tempfile
+import urllib.request
 
 
 # ---------------------------------------------------------------------------
@@ -63,12 +66,79 @@ class SayBackend:
         os.remove(aiff)
 
 
-BACKENDS = {b.name: b for b in (SayBackend,)}
-DEFAULT_VOICE = {"say": "Serena (Premium)"}
+class OpenRouterBackend:
+    """GPT voices via OpenRouter (openai/gpt-audio-mini by default). Needs
+    OPENROUTER_API_KEY. Audio output requires streaming; chunks arrive as base64
+    pcm16 at 24 kHz and are concatenated, then encoded with ffmpeg. Voices: alloy,
+    ash, ballad, coral, echo, fable, nova, onyx, sage, shimmer, verse."""
+    name = "openrouter"
+    URL = "https://openrouter.ai/api/v1/chat/completions"
+    MODEL = os.environ.get("OPENROUTER_TTS_MODEL", "openai/gpt-audio-mini")
+    STYLE = os.environ.get("NARRATE_STYLE",
+                           "Warm, natural, unhurried teacher voice.")
+
+    @staticmethod
+    def available():
+        return bool(os.environ.get("OPENROUTER_API_KEY"))
+
+    @classmethod
+    def synth(cls, text, out_wav, voice):
+        body = {
+            "model": cls.MODEL, "stream": True,
+            "modalities": ["text", "audio"],
+            "audio": {"voice": voice or "nova", "format": "pcm16"},
+            "messages": [
+                {"role": "system", "content": "You are a voice-over reader. Read the user text "
+                 "aloud exactly as written, word for word. Do not add, remove, or rephrase "
+                 "anything. " + cls.STYLE},
+                {"role": "user", "content": text},
+            ],
+        }
+        req = urllib.request.Request(cls.URL, data=json.dumps(body).encode(), headers={
+            "Authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"],
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/lilyzhng/chalkboarding",
+        })
+        pcm = bytearray()
+        with urllib.request.urlopen(req, timeout=120) as r:
+            for raw in r:
+                line = raw.decode("utf-8", "ignore").strip()
+                if not line.startswith("data:"):
+                    continue
+                payload = line[5:].strip()
+                if payload == "[DONE]":
+                    break
+                try:
+                    d = json.loads(payload)
+                except ValueError:
+                    continue
+                if "error" in d:
+                    raise RuntimeError(d["error"].get("message", str(d["error"])))
+                for ch in d.get("choices", []):
+                    a = (ch.get("delta") or {}).get("audio") or {}
+                    if a.get("data"):
+                        pcm += base64.b64decode(a["data"])
+        if not pcm:
+            raise RuntimeError("no audio returned")
+        raw_path = out_wav + ".pcm"
+        open(raw_path, "wb").write(pcm)
+        sp.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "s16le", "-ar", "24000", "-ac", "1",
+                "-i", raw_path, "-ar", "48000", "-ac", "2", "-c:a", "aac", "-b:a", "192k", out_wav],
+               check=True)
+        os.remove(raw_path)
+
+
+BACKENDS = {b.name: b for b in (SayBackend, OpenRouterBackend)}
+DEFAULT_VOICE = {"say": "Samantha", "openrouter": "nova"}
+
+
+def installed_say_voices():
+    out = sp.run(["say", "-v", "?"], capture_output=True, text=True).stdout
+    return {line.split("  ")[0].strip() for line in out.splitlines() if line.strip()}
 
 
 def _which(x):
-    return sp.run(["which", x], capture_output=True).returncode == 0
+    return shutil.which(x) is not None
 
 
 def _dur(path):
@@ -103,7 +173,7 @@ def main():
     ap.add_argument("html")
     ap.add_argument("video")
     ap.add_argument("--voice", default=None, help="TTS voice name (backend-specific)")
-    ap.add_argument("--tts", default="say", choices=sorted(BACKENDS), help="TTS backend")
+    ap.add_argument("--tts", default="say", choices=sorted(BACKENDS), help="TTS backend: say (macOS) or openrouter (GPT voices)")
     ap.add_argument("--vo", default=None, help="sidecar narration JSON (overrides embedded)")
     ap.add_argument("--out", default=None, help="output MP4 (default: overwrite <video>)")
     args = ap.parse_args()
@@ -117,9 +187,12 @@ def main():
     backend = BACKENDS[args.tts]
     if not backend.available():
         print(f"! narrate: TTS backend '{args.tts}' is unavailable on this host "
-              f"(macOS `say` only, for now) — leaving the video silent.")
+              f"(say needs macOS; openrouter needs OPENROUTER_API_KEY) — leaving the video silent.")
         return 0
     voice = args.voice or DEFAULT_VOICE.get(args.tts)
+    if voice and args.tts == "say" and voice not in installed_say_voices():
+        print(f"! narrate: voice '{voice}' not installed (see `say -v '?'`); using the system default")
+        voice = None
 
     vlen = _dur(args.video)
     tmp = tempfile.mkdtemp(prefix="chalk_vo_")

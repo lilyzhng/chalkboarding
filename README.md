@@ -96,7 +96,7 @@ bash scripts/export.sh my_chalk.html --seconds 10             # match the figure
 bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"  # click a control mid-clip
 ```
 
-Add `--gif` if you need a GIF.
+Add `--gif` if you need a GIF. Add `--narrate --tts gemini --voice female` for a voice-over (see `narration.md` for backends and recommended voices).
 
 ### Trace an Image into a Pixel Grid
 

@@ -168,7 +168,22 @@ class GeminiBackend:
 
 
 BACKENDS = {b.name: b for b in (SayBackend, OpenRouterBackend, GeminiBackend)}
-DEFAULT_VOICE = {"say": "Samantha", "openrouter": "nova", "gemini": "Kore"}
+
+# Recommended voices per backend. `--voice female` / `--voice male` resolve to
+# these; a bare `--tts` with no `--voice` uses the female pick.
+RECOMMENDED = {
+    "gemini":     {"female": "Kore",     "male": "Puck"},
+    "openrouter": {"female": "coral",    "male": "ballad"},
+    "say":        {"female": "Samantha", "male": "Daniel"},
+}
+DEFAULT_VOICE = {k: v["female"] for k, v in RECOMMENDED.items()}
+
+
+def resolve_voice(tts, voice):
+    """Map the female/male aliases to the backend's recommended voice."""
+    if voice and voice.lower() in ("female", "male"):
+        return RECOMMENDED[tts][voice.lower()]
+    return voice or DEFAULT_VOICE.get(tts)
 
 
 def installed_say_voices():
@@ -211,7 +226,7 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("html")
     ap.add_argument("video")
-    ap.add_argument("--voice", default=None, help="TTS voice name (backend-specific)")
+    ap.add_argument("--voice", default=None, help="voice name, or `female` / `male` for the backend's recommended voice")
     ap.add_argument("--tts", default="say", choices=sorted(BACKENDS), help="TTS backend: say (macOS), openrouter (GPT voices), gemini (Gemini TTS)")
     ap.add_argument("--vo", default=None, help="sidecar narration JSON (overrides embedded)")
     ap.add_argument("--out", default=None, help="output MP4 (default: overwrite <video>)")
@@ -225,10 +240,15 @@ def main():
 
     backend = BACKENDS[args.tts]
     if not backend.available():
+        hint = {"openrouter": "set OPENROUTER_API_KEY (optional; any OpenRouter key works)",
+                "gemini": "set GEMINI_API_KEY", "say": "macOS only"}.get(args.tts, "")
+        print(f"! narrate: TTS backend '{args.tts}' is unavailable: {hint} — leaving the video silent.")
+        return 0
+    if False:
         print(f"! narrate: TTS backend '{args.tts}' is unavailable on this host "
               f"(say needs macOS; openrouter needs OPENROUTER_API_KEY; gemini needs GEMINI_API_KEY) — leaving the video silent.")
         return 0
-    voice = args.voice or DEFAULT_VOICE.get(args.tts)
+    voice = resolve_voice(args.tts, args.voice)
     if voice and args.tts == "say" and voice not in installed_say_voices():
         print(f"! narrate: voice '{voice}' not installed (see `say -v '?'`); using the system default")
         voice = None

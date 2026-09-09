@@ -64,6 +64,16 @@ On a host where the backend isn't available (non-macOS, or `say` missing),
 `narrate.py` prints a note and exits without changing the video — the silent
 export still ships.
 
+## Recommended voices
+
+`--voice female` or `--voice male` picks these; leaving `--voice` off uses the female one.
+
+| Backend | Key | Female | Male | Notes |
+|---|---|---|---|---|
+| `gemini` | `GEMINI_API_KEY` | Kore | Puck | Most natural of the three (top of the TTS arena). Speaks ~25% slower than GPT, so keep lines short. |
+| `openrouter` | `OPENROUTER_API_KEY` (optional; any OpenRouter key) | coral | ballad | GPT voices. Others: nova, sage, shimmer, verse, fable, onyx, ash, echo, alloy. |
+| `say` | none, macOS | Samantha | Daniel | Built in. Premium voices sound better but must be installed in System Settings. |
+
 ## 3. Run it directly (without re-exporting)
 
 If you already have the MP4, add narration to it in place:

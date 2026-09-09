@@ -5,8 +5,9 @@ figure already plays on a fixed schedule of beats, so it can carry an **optional
 voice-over** that turns it into a narrated explainer. This is off unless you ask
 for it, and it never changes the silent export.
 
-> Two backends: macOS `say` (built in, no key) and `openrouter` (GPT voices via
-> OpenRouter, needs `OPENROUTER_API_KEY`). The TTS layer is a small seam
+> Three backends: macOS `say` (built in, no key), `openrouter` (GPT voices, needs
+> `OPENROUTER_API_KEY`), and `gemini` (Gemini TTS, needs `GEMINI_API_KEY`; the
+> most natural of the three). The TTS layer is a small seam
 > (`BACKENDS` in `scripts/narrate.py`) so more can be added without changing the
 > narration format below.
 
@@ -43,7 +44,10 @@ frozen last frame to cover it.
 bash scripts/export.sh my_chalk.html --narrate                                   # macOS say, Samantha
 bash scripts/export.sh my_chalk.html --narrate --voice "Serena (Premium)"        # a Premium say voice, if installed
 OPENROUTER_API_KEY=... bash scripts/export.sh my_chalk.html --narrate --tts openrouter --voice nova   # GPT voice
+GEMINI_API_KEY=...     bash scripts/export.sh my_chalk.html --narrate --tts gemini --voice Kore       # Gemini TTS
 ```
+
+Gemini voices (`--tts gemini`): Kore, Puck, Zephyr, Aoede, Charon, Fenrir, Leda, Orus and more. Model defaults to `gemini-3.1-flash-tts-preview`; override with `GEMINI_TTS_MODEL`.
 
 GPT voices (`--tts openrouter`): alloy, ash, ballad, coral, echo, fable, nova, onyx,
 sage, shimmer, verse. Model defaults to `openai/gpt-audio-mini`; override with

@@ -128,8 +128,47 @@ class OpenRouterBackend:
         os.remove(raw_path)
 
 
-BACKENDS = {b.name: b for b in (SayBackend, OpenRouterBackend)}
-DEFAULT_VOICE = {"say": "Samantha", "openrouter": "nova"}
+class GeminiBackend:
+    """Gemini TTS (gemini-3.1-flash-tts-preview by default). Needs GEMINI_API_KEY.
+    Returns pcm16 at 24 kHz, encoded with ffmpeg. Voices include Kore, Puck,
+    Zephyr, Aoede, Charon, Fenrir, Leda, Orus; full list in the Gemini docs."""
+    name = "gemini"
+    MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-3.1-flash-tts-preview")
+    STYLE = os.environ.get("NARRATE_STYLE", "Warm, natural, unhurried teacher voice.")
+
+    @staticmethod
+    def available():
+        return bool(os.environ.get("GEMINI_API_KEY"))
+
+    @classmethod
+    def synth(cls, text, out_wav, voice):
+        url = (f"https://generativelanguage.googleapis.com/v1beta/models/{cls.MODEL}:generateContent"
+               f"?key={os.environ['GEMINI_API_KEY']}")
+        body = {
+            "contents": [{"parts": [{"text": f"Read this exactly as written, word for word. {cls.STYLE}\n\n{text}"}]}],
+            "generationConfig": {"responseModalities": ["AUDIO"],
+                                 "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice or "Kore"}}}},
+        }
+        req = urllib.request.Request(url, data=json.dumps(body).encode(),
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=120) as r:
+            d = json.load(r)
+        part = d["candidates"][0]["content"]["parts"][0]["inlineData"]
+        pcm = base64.b64decode(part["data"])
+        rate = 24000
+        m = re.search(r"rate=(\d+)", part.get("mimeType", ""))
+        if m:
+            rate = int(m.group(1))
+        raw_path = out_wav + ".pcm"
+        open(raw_path, "wb").write(pcm)
+        sp.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "s16le", "-ar", str(rate), "-ac", "1",
+                "-i", raw_path, "-ar", "48000", "-ac", "2", "-c:a", "aac", "-b:a", "192k", out_wav],
+               check=True)
+        os.remove(raw_path)
+
+
+BACKENDS = {b.name: b for b in (SayBackend, OpenRouterBackend, GeminiBackend)}
+DEFAULT_VOICE = {"say": "Samantha", "openrouter": "nova", "gemini": "Kore"}
 
 
 def installed_say_voices():
@@ -173,7 +212,7 @@ def main():
     ap.add_argument("html")
     ap.add_argument("video")
     ap.add_argument("--voice", default=None, help="TTS voice name (backend-specific)")
-    ap.add_argument("--tts", default="say", choices=sorted(BACKENDS), help="TTS backend: say (macOS) or openrouter (GPT voices)")
+    ap.add_argument("--tts", default="say", choices=sorted(BACKENDS), help="TTS backend: say (macOS), openrouter (GPT voices), gemini (Gemini TTS)")
     ap.add_argument("--vo", default=None, help="sidecar narration JSON (overrides embedded)")
     ap.add_argument("--out", default=None, help="output MP4 (default: overwrite <video>)")
     args = ap.parse_args()
@@ -187,7 +226,7 @@ def main():
     backend = BACKENDS[args.tts]
     if not backend.available():
         print(f"! narrate: TTS backend '{args.tts}' is unavailable on this host "
-              f"(say needs macOS; openrouter needs OPENROUTER_API_KEY) — leaving the video silent.")
+              f"(say needs macOS; openrouter needs OPENROUTER_API_KEY; gemini needs GEMINI_API_KEY) — leaving the video silent.")
         return 0
     voice = args.voice or DEFAULT_VOICE.get(args.tts)
     if voice and args.tts == "say" and voice not in installed_say_voices():

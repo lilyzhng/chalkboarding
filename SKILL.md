@@ -219,9 +219,10 @@ spoken lines against the figure's beats and export with `--narrate`:
 ```bash
 bash scripts/export.sh <file> --narrate                                  # macOS say
 OPENROUTER_API_KEY=... bash scripts/export.sh <file> --narrate --tts openrouter --voice nova   # GPT voice
+GEMINI_API_KEY=...     bash scripts/export.sh <file> --narrate --tts gemini --voice Kore       # Gemini TTS
 ```
 
 Narration is placed at absolute timestamps (the video stays authoritative, so
 it never drifts out of sync). Off unless asked for. Backends: macOS `say`
-(no key) or `openrouter` (GPT voices, needs `OPENROUTER_API_KEY`). Full format
+(no key), `openrouter` (GPT voices), or `gemini` (Gemini TTS, the most natural). Full format
 and timing rules in `narration.md`.

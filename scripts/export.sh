@@ -9,7 +9,9 @@
 #   bash scripts/export.sh my_chalk.html --gif                # also my_chalk.gif (autoplays in a README)
 #   bash scripts/export.sh my_chalk.html --seconds 9 --fps 30 --width 1200
 #   bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click an element at 4s
-#   bash scripts/export.sh my_chalk.html --narrate --voice "Serena (Premium)"  # + voice-over (macOS)
+#   bash scripts/export.sh my_chalk.html --narrate                        # + voice-over (macOS say)
+#   bash scripts/export.sh my_chalk.html --narrate --tts openrouter --voice nova   # GPT voice via OpenRouter
+#   bash scripts/export.sh my_chalk.html --narrate --tts gemini --voice Kore       # Gemini TTS
 #
 # What this does:
 #   1. First run only: creates a private Python env in ~/.cache/chalkboarding,
@@ -17,14 +19,14 @@
 #   2. Checks ffmpeg is installed (brew install ffmpeg).
 #   3. Runs export_media.py: drives the page on a virtual clock, screenshots
 #      every frame at 2x, crops to the board, encodes with ffmpeg.
-#   4. Optional: with --narrate, muxes a voice-over onto the MP4 (see narration.md).
+#   4. Optional: with --narrate, muxes a voice-over onto the MP4 (see SKILL.md).
 #
 # Flags after the HTML path are passed to export_media.py, EXCEPT --narrate,
 # --voice and --tts, which control the optional voice-over step.
 set -euo pipefail
 
 if [[ $# -lt 1 || "$1" == "-h" || "$1" == "--help" ]]; then
-    echo "Usage: bash scripts/export.sh <figure.html> [--gif] [--seconds N] [--fps N] [--width N] [--out DIR] [--click SEL@SEC] [--narrate] [--voice NAME] [--tts say]"
+    echo "Usage: bash scripts/export.sh <figure.html> [--gif] [--seconds N] [--fps N] [--width N] [--out DIR] [--click SEL@SEC] [--narrate] [--voice NAME] [--tts say|openrouter|gemini]"
     exit 1
 fi
 if [[ ! -f "$1" ]]; then
@@ -61,7 +63,6 @@ ok "ffmpeg found"
 info "Rendering..."
 "$PY" "$SCRIPT_DIR/export_media.py" "$HTML" ${PASS[@]+"${PASS[@]}"}
 
-# Output lands next to the HTML unless export_media.py was given --out DIR.
 OUT_DIR="$(dirname "$HTML")"
 for ((i=0; i<${#PASS[@]}; i++)); do
     [[ "${PASS[$i]}" == "--out" ]] && OUT_DIR="${PASS[$((i+1))]}"

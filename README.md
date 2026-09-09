@@ -36,6 +36,13 @@ https://github.com/user-attachments/assets/a6be0baa-2bb7-4260-9b30-df08cc7472aa
 **Concept.** Same prefix, "The fastest way to ___ ___ ___ ___", drafted two ways. When each position picks its own top token, neighbors collide into "get to to school". When adjacent positions are scored together, one coherent path wins: "get to school quickly".
 **Why this figure.** It shows why parallel drafts lose acceptance at later positions and how path selection fixes it, with a walker stuck at a barrier and a runner reaching the school as the two outcomes.
 
+### Figure 5. How the internet works: a click's journey, with voice-over. Contributed by [@rajpdus](https://github.com/rajpdus).
+
+https://github.com/user-attachments/assets/815e5c1e-3a50-4eda-bc58-c1ee4baec079
+
+**Concept.** Explain to a kid how a YouTube click travels the internet: router, ISP, server, packets racing back and reassembling on your screen.
+**Why this figure.** The first narrated example. Lines are declared against the figure's beats and voiced by Gemini TTS with `--narrate`.
+
 Four more live in `examples/`, each with an MP4 in `examples/media/`: dog and cat (strict vs relaxed verification), the decoding race, twin timelines, and KV injection. `worked-examples.md` records the prompt, the ASCII mock, and the implementation tricks for the richest ones.
 
 ### Key Features
@@ -96,7 +103,7 @@ bash scripts/export.sh my_chalk.html --seconds 10             # match the figure
 bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"  # click a control mid-clip
 ```
 
-Add `--gif` if you need a GIF.
+Add `--gif` if you need a GIF. Add `--narrate --tts gemini` for a voice-over (needs `GEMINI_API_KEY`; see SKILL.md for other backends).
 
 ### Trace an Image into a Pixel Grid
 
@@ -130,7 +137,7 @@ python3 scripts/trace_bitmap.py kangaroo.png --size 32   # prints the X/. bitmap
 
 ## Credits
 
-Created by [@lily_gpupoor](https://x.com/lily_gpupoor) and [@Madisonkanna](https://x.com/Madisonkanna).
+Created by [@lily_gpupoor](https://x.com/lily_gpupoor) and [@Madisonkanna](https://x.com/Madisonkanna). Voice-over by [@rajpdus](https://github.com/rajpdus).
 
 ## License
 

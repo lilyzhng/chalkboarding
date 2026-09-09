@@ -211,9 +211,9 @@ bash scripts/export.sh toggle_chalk.html --click "#mRelax@4"   # click a control
 
 Then tell the user the output path and size, and that redoing the export overwrites the same file.
 
-### Voice-over (optional, macOS)
+### Voice-over (optional)
 
-Declare lines against the figure's beats in an embedded block, then export with `--narrate`:
+A figure is silent by default. To narrate it, declare lines against the figure's beats in an embedded block, then export with `--narrate`:
 
 ```html
 <script type="application/vo+json" id="vo">
@@ -223,7 +223,12 @@ Declare lines against the figure's beats in an embedded block, then export with 
 ```
 
 ```bash
-bash scripts/export.sh my_chalk.html --narrate --voice "Samantha"
+GEMINI_API_KEY=...     bash scripts/export.sh <file> --narrate --tts gemini        # most natural
+OPENROUTER_API_KEY=... bash scripts/export.sh <file> --narrate --tts openrouter    # GPT voices
+bash scripts/export.sh <file> --narrate                                            # macOS say, no key
 ```
 
-Each line must fit before the next one starts; `narrate.py` prints a fit table and flags OVERFLOW. Voices: `say -v '?'`. Without `--narrate` the export is unchanged.
+- `--voice female` (default) or `male` picks a recommended voice per backend. Any backend voice name also works.
+- Lines never overlap. A long line is sped up at most 12%, then the next line is delayed. Keep lines short.
+- No `--narrate`, or no key: the export is unchanged.
+- Narrate an existing MP4: `python3 scripts/narrate.py <file>.html <file>.mp4 --tts gemini`.

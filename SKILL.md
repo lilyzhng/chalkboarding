@@ -228,4 +228,7 @@ OPENROUTER_API_KEY=... bash scripts/export.sh <file> --narrate --tts openrouter 
 bash scripts/export.sh <file> --narrate                                            # macOS say, no key
 ```
 
-`--voice female` (default) or `--voice male` picks a recommended voice per backend; any backend voice name also works (Gemini: Kore, Puck, Zephyr...; GPT: coral, ballad, nova...; say: `say -v '?'`). Lines never overlap: one that would run into the next beat is sped up by at most 12%, then the next line is delayed, and `narrate.py` prints a fit table showing any drift. Keep lines short, Gemini speaks slowly. Without `--narrate`, or if the backend's key is missing, the export is unchanged. Narrate an existing MP4 without re-exporting: `python3 scripts/narrate.py <file>.html <file>.mp4 --tts gemini`.
+- `--voice female` (default) or `male` picks a recommended voice per backend. Any backend voice name also works.
+- Lines never overlap. A long line is sped up at most 12%, then the next line is delayed. Keep lines short.
+- No `--narrate`, or no key: the export is unchanged.
+- Narrate an existing MP4: `python3 scripts/narrate.py <file>.html <file>.mp4 --tts gemini`.

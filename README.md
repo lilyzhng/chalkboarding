@@ -42,7 +42,7 @@ Contributed by [@rajpdus](https://github.com/rajpdus).
 
 https://github.com/user-attachments/assets/815e5c1e-3a50-4eda-bc58-c1ee4baec079
 
-**Concept.** You tap play on a cat video. The click travels to your router, your ISP, across the internet to a server, which chops the video into packets that race back and reassemble on your screen.
+**Concept.** Explain how a YouTube click travels the internet: router, ISP, server, packets racing back and reassembling on your screen.
 **Why this figure.** The first narrated example. Lines are declared against the figure's beats and voiced by Gemini TTS with `--narrate`, so the board shows and a teacher tells.
 
 Four more live in `examples/`, each with an MP4 in `examples/media/`: dog and cat (strict vs relaxed verification), the decoding race, twin timelines, and KV injection. `worked-examples.md` records the prompt, the ASCII mock, and the implementation tricks for the richest ones.

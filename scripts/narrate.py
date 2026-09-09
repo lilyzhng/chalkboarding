@@ -252,15 +252,35 @@ def main():
     vlen = _dur(args.video)
     tmp = tempfile.mkdtemp(prefix="chalk_vo_")
     clips = []
-    print("beat  start   dur   ends   window  fit")
+    MAX_TEMPO = 1.12   # speed a long line up by at most 12% before delaying the next one
+    GAP = 0.25         # breath between lines, seconds
+    print("beat  beat_t  start  dur   ends   window  note")
+    prev_end = 0.0
     for i, b in enumerate(beats):
         clip = os.path.join(tmp, f"l{i}.m4a")
         backend.synth(b["text"], clip, voice)
         d = _dur(clip)
-        clips.append((b["t"], clip, d))
         nxt = beats[i + 1]["t"] if i + 1 < len(beats) else vlen
-        fit = "ok" if b["t"] + d <= nxt + 0.2 else "OVERFLOW"
-        print(f"{i:>3}  {b['t']:5.1f}  {d:4.1f}  {b['t']+d:5.1f}  {nxt-b['t']:5.1f}   {fit}")
+        window = nxt - b["t"]
+        note = "ok"
+        # never overlap the previous line: start at the beat, or after the previous line ends
+        start = max(b["t"], prev_end + GAP if i else 0.0)
+        # if this line would still run into the next beat, compress it a little first
+        if start + d > nxt + 0.2 and i + 1 < len(beats):
+            tempo = min(MAX_TEMPO, d / max(0.1, nxt - start))
+            if tempo > 1.01:
+                fast = os.path.join(tmp, f"l{i}f.m4a")
+                sp.run(["ffmpeg", "-y", "-loglevel", "error", "-i", clip, "-filter:a", f"atempo={tempo:.3f}",
+                        "-c:a", "aac", "-b:a", "192k", fast], check=True)
+                clip, d = fast, _dur(fast)
+                note = f"sped {tempo:.2f}x"
+        if start > b["t"] + 0.05:
+            note += f", delayed +{start - b['t']:.1f}s"
+        if start + d > nxt + 0.2 and i + 1 < len(beats):
+            note += ", still overruns"
+        clips.append((start, clip, d))
+        prev_end = start + d
+        print(f"{i:>3}  {b['t']:6.1f}  {start:5.1f}  {d:4.1f}  {start+d:5.1f}  {window:6.1f}  {note}")
 
     audio_end = max(t + d for t, _, d in clips)
     final_len = max(vlen, math.ceil(audio_end * 10) / 10)

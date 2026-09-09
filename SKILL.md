@@ -213,14 +213,17 @@ Then tell the user the output path and size, and that redoing the export overwri
 
 ### Voice-over (optional, macOS)
 
-A figure is silent by default. To turn it into a narrated explainer, declare
-spoken lines against the figure's beats and export with `--narrate`:
+Declare lines against the figure's beats in an embedded block, then export with `--narrate`:
 
-```bash
-bash scripts/export.sh <file> --narrate --voice "Serena (Premium)"
+```html
+<script type="application/vo+json" id="vo">
+[ {"t": 0, "text": "Ever wonder what happens when you tap play?"},
+  {"t": 7, "text": "First, your tap zips to your home router."} ]
+</script>
 ```
 
-Narration is placed at absolute timestamps (the video stays authoritative, so
-it never drifts out of sync). Off unless asked for; **macOS `say` only for
-now**, with a pluggable seam for other TTS backends. Full format and timing
-rules in `narration.md`.
+```bash
+bash scripts/export.sh my_chalk.html --narrate --voice "Samantha"
+```
+
+Each line must fit before the next one starts; `narrate.py` prints a fit table and flags OVERFLOW. Voices: `say -v '?'`. Without `--narrate` the export is unchanged.

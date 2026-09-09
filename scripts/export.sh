@@ -61,7 +61,12 @@ ok "ffmpeg found"
 info "Rendering..."
 "$PY" "$SCRIPT_DIR/export_media.py" "$HTML" ${PASS[@]+"${PASS[@]}"}
 
-OUT_BASE="${HTML%.html}"
+# Output lands next to the HTML unless export_media.py was given --out DIR.
+OUT_DIR="$(dirname "$HTML")"
+for ((i=0; i<${#PASS[@]}; i++)); do
+    [[ "${PASS[$i]}" == "--out" ]] && OUT_DIR="${PASS[$((i+1))]}"
+done
+OUT_BASE="$OUT_DIR/$(basename "${HTML%.html}")"
 
 if [[ "$NARRATE" == "1" ]]; then
     if [[ -f "$OUT_BASE.mp4" ]]; then

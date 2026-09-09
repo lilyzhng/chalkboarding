@@ -1,29 +1,8 @@
 #!/usr/bin/env python3
-"""Add an OPTIONAL voice-over to a chalkboard figure's exported MP4.
+"""Mux an optional voice-over onto a figure's MP4: lines from the figure's
+<script type="application/vo+json"> block, placed at their timestamps via macOS `say`.
 
-The video is authoritative: the figure already plays on a fixed beat schedule,
-so narration lines are placed at absolute timestamps (not concatenated), which
-means they can never drift out of sync. A line that overruns its beat only
-overlaps the next one briefly; a fit-check warns when that happens.
-
-Narration lives WITH the figure (the skill's "one self-contained HTML file"
-principle): an embedded JSON block, or a sidecar file.
-
-    <script type="application/vo+json" id="vo">
-    [ {"t": 0,  "text": "Ever wonder what happens when you tap play?"},
-      {"t": 7,  "text": "First, your tap zips to your home router."} ]
-    </script>
-
-Times are seconds, aligned to the figure's own beats. Sidecar fallback:
-`<figure>_vo.json` next to the HTML, or `--vo <file>`.
-
-TTS is pluggable; only macOS `say` is implemented today. On a non-macOS host
-(or if the chosen backend is unavailable) this exits 0 without changing the
-video, so a silent export still ships.
-
-Usage:
-    python3 scripts/narrate.py <figure.html> <figure.mp4> [--voice NAME]
-                               [--tts say] [--vo FILE] [--out FILE]
+Usage: python3 scripts/narrate.py <figure.html> <figure.mp4> [--voice NAME] [--tts say] [--vo FILE] [--out FILE]
 """
 import argparse
 import json
@@ -36,8 +15,10 @@ import tempfile
 
 
 # ---------------------------------------------------------------------------
-# TTS backends — a tiny seam so ElevenLabs / Azure / Qwen3-TTS can be added
-# later without touching the figure format or the mux logic.
+# TTS backends — a tiny seam (name / available / synth, optional voice_ok) so
+# ElevenLabs / Azure / Qwen3-TTS can be added later without touching the figure
+# format or the mux logic. If none is available, narrate.py leaves the video
+# silent rather than failing.
 # ---------------------------------------------------------------------------
 class SayBackend:
     """macOS built-in `say`. Discover voices with `say -v '?'`; premium/enhanced
@@ -47,6 +28,14 @@ class SayBackend:
     @staticmethod
     def available():
         return sys.platform == "darwin" and _which("say")
+
+    @staticmethod
+    def voice_ok(voice):
+        # `say` silently falls back to the default voice for an unknown name,
+        # so check it's actually installed before we trust the log.
+        out = sp.run(["say", "-v", "?"], capture_output=True, text=True).stdout
+        names = {ln.split("  ")[0].strip() for ln in out.splitlines() if ln.strip()}
+        return voice in names
 
     @staticmethod
     def synth(text, out_wav, voice):
@@ -120,6 +109,10 @@ def main():
               f"(macOS `say` only, for now) — leaving the video silent.")
         return 0
     voice = args.voice or DEFAULT_VOICE.get(args.tts)
+    if voice and hasattr(backend, "voice_ok") and not backend.voice_ok(voice):
+        print(f"! narrate: voice '{voice}' not installed (see `say -v '?'`); "
+              f"using the system default")
+        voice = None
 
     vlen = _dur(args.video)
     tmp = tempfile.mkdtemp(prefix="chalk_vo_")
@@ -169,7 +162,7 @@ def main():
             "-map", "0:v:0", "-map", "1:a:0", *vcodec,
             "-c:a", "aac", "-b:a", "192k", "-shortest", tmp_out], check=True)
     os.replace(tmp_out, out)
-    print(f"\nok voice-over ({voice}) muxed -> {out}  ({_dur(out):.1f}s)")
+    print(f"\nok voice-over ({voice or 'system default'}) muxed -> {out}  ({_dur(out):.1f}s)")
     return 0
 
 

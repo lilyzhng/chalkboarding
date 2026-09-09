@@ -244,10 +244,6 @@ def main():
                 "gemini": "set GEMINI_API_KEY", "say": "macOS only"}.get(args.tts, "")
         print(f"! narrate: TTS backend '{args.tts}' is unavailable: {hint} — leaving the video silent.")
         return 0
-    if False:
-        print(f"! narrate: TTS backend '{args.tts}' is unavailable on this host "
-              f"(say needs macOS; openrouter needs OPENROUTER_API_KEY; gemini needs GEMINI_API_KEY) — leaving the video silent.")
-        return 0
     voice = resolve_voice(args.tts, args.voice)
     if voice and args.tts == "say" and voice not in installed_say_voices():
         print(f"! narrate: voice '{voice}' not installed (see `say -v '?'`); using the system default")

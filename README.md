@@ -36,9 +36,7 @@ https://github.com/user-attachments/assets/a6be0baa-2bb7-4260-9b30-df08cc7472aa
 **Concept.** Same prefix, "The fastest way to ___ ___ ___ ___", drafted two ways. When each position picks its own top token, neighbors collide into "get to to school". When adjacent positions are scored together, one coherent path wins: "get to school quickly".
 **Why this figure.** It shows why parallel drafts lose acceptance at later positions and how path selection fixes it, with a walker stuck at a barrier and a runner reaching the school as the two outcomes.
 
-### Figure 5. How the internet works: a click's journey, with voice-over
-
-Contributed by [@rajpdus](https://github.com/rajpdus).
+### Figure 5. How the internet works: a click's journey, with voice-over. Contributed by [@rajpdus](https://github.com/rajpdus).
 
 https://github.com/user-attachments/assets/815e5c1e-3a50-4eda-bc58-c1ee4baec079
 

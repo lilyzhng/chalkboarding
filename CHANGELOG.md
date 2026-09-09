@@ -2,6 +2,9 @@
 
 One entry per version, a line or two each.
 
+## [0.1.2] - 2026-09-08
+- Voice-over: Gemini TTS (recommended) and OpenRouter GPT voices; lines never overlap.
+
 ## [0.1.1] - 2026-09-08
 - Add PR template and changelog.
 

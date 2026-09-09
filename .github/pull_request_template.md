@@ -13,3 +13,4 @@
 - [ ] Single, clear scope
 - [ ] No secrets or API keys committed
 - [ ] README updated if usage changed
+- [ ] Bullet added under Unreleased in CHANGELOG.md

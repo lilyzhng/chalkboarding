@@ -38,7 +38,7 @@ https://github.com/user-attachments/assets/a6be0baa-2bb7-4260-9b30-df08cc7472aa
 
 ### Figure 5. How the internet works: a click's journey, with voice-over. Contributed by [@rajpdus](https://github.com/rajpdus).
 
-https://github.com/user-attachments/assets/815e5c1e-3a50-4eda-bc58-c1ee4baec079
+https://github.com/user-attachments/assets/dc337c4d-96c5-4bdc-89d5-6d4722fa9a95
 
 **Concept.** Explain to a kid how a YouTube click travels the internet: router, ISP, server, packets racing back and reassembling on your screen.
 **Why this figure.** The first narrated example. Lines are declared against the figure's beats and voiced by Gemini TTS with `--narrate`.
